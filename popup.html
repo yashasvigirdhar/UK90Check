@@ -8,6 +8,16 @@
       padding: 20px;
       font-family: Arial, sans-serif;
     }
+    .title-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .title-container img {
+      width: 24px;
+      height: 24px;
+    }
     .travel-entry {
       margin: 10px 0;
       display: flex;
@@ -54,7 +64,10 @@
   </style>
 </head>
 <body>
-  <h2>UK90Check</h2>
+  <div class="title-container">
+    <img src="icons/icon48.png" alt="UK90Check Icon">
+    <h2>UK90Check</h2>
+  </div>
   <div>
     <label for="startDate">Start Date:</label>
     <input type="date" id="startDate" required>
