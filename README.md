@@ -6,6 +6,8 @@ A Chrome extension to help track days spent outside the UK in preparation for UK
 
 This extension helps you track your days spent outside the UK in preparation for your UK citizenship application. According to UK citizenship rules, you cannot be outside the UK for more than 90 days in the 12 months preceding your citizenship application. The 12-month period can begin after you receive your Indefinite Leave to Remain (ILR).
 
+This is my pilot project to explore AI-generated code using [Cursor](https://www.cursor.com/).
+
 ## Features
 
 - Track start date of your 12-month period
