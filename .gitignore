@@ -1,20 +1,17 @@
 # Dependencies
 node_modules/
 
-# Build output
+# Distribution
 dist/
+*.zip
 
-# IDE and editor files
-.vscode/
-.idea/
-*.swp
-*.swo
+# IDE and OS files
 .DS_Store
+.idea/
+.vscode/
 
 # Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+*.log
 
 # Environment variables
 .env
