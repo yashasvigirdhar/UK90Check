@@ -1,16 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
-  <!-- Calendar background -->
-  <rect x="16" y="16" width="96" height="96" rx="8" fill="#1a73e8"/>
-  
-  <!-- Calendar header -->
-  <rect x="16" y="16" width="96" height="24" rx="8" fill="#1557b0"/>
-  
-  <!-- Calendar grid lines -->
-  <line x1="16" y1="40" x2="112" y2="40" stroke="white" stroke-width="4" opacity="0.3"/>
-  <line x1="16" y1="64" x2="112" y2="64" stroke="white" stroke-width="4" opacity="0.3"/>
-  <line x1="16" y1="88" x2="112" y2="88" stroke="white" stroke-width="4" opacity="0.3"/>
-  
-  <!-- Checkmark -->
-  <path d="M40 80 L56 96 L88 64" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- Background -->
+    <rect width="128" height="128" rx="8" fill="#012169"/>
+    
+    <!-- Diagonal Lines (z-index: 1) -->
+    <g transform="translate(64,64)">
+        <!-- First diagonal line -->
+        <g transform="rotate(45)">
+            <rect x="-90" y="-12" width="180" height="24" fill="white"/>
+            <rect x="-90" y="-6" width="180" height="12" fill="#CF142B"/>
+        </g>
+        <!-- Second diagonal line -->
+        <g transform="rotate(-45)">
+            <rect x="-90" y="-12" width="180" height="24" fill="white"/>
+            <rect x="-90" y="-6" width="180" height="12" fill="#CF142B"/>
+        </g>
+    </g>
+    
+    <!-- Vertical Cross (z-index: 2) -->
+    <g transform="translate(64,0)">
+        <rect x="-24" y="0" width="48" height="128" fill="white"/>
+        <rect x="-16" y="0" width="32" height="128" fill="#CF142B"/>
+    </g>
+    
+    <!-- Horizontal Cross (z-index: 2) -->
+    <g transform="translate(0,64)">
+        <rect x="0" y="-24" width="128" height="48" fill="white"/>
+        <rect x="0" y="-16" width="128" height="32" fill="#CF142B"/>
+    </g>
+    
+    <!-- Calendar Box (z-index: 3) -->
+    <rect x="34" y="34" width="60" height="60" rx="8" fill="white" fill-opacity="0.9"/>
+    <text x="64" y="67" font-family="Arial" font-size="24" font-weight="bold" fill="#012169" text-anchor="middle" dominant-baseline="middle">90</text>
 </svg> 
