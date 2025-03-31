@@ -27,7 +27,7 @@ This extension is currently under development and not yet available in the Chrom
 3. Set your start date (when your 12-month period begins)
 4. Add your travel dates using the "Add Travel Date" button
 5. View your calculated days:
-   - Current period: Days outside UK from start date until today
+   - Until now: Days outside UK from start date until today
    - Full period: Days outside UK in the complete 12-month period
 
 ## License
