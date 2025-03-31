@@ -15,10 +15,10 @@ document.body.innerHTML = `
   <button id="addTravel">Add Travel Date</button>
   <button id="calculate">Calculate</button>
   <div id="currentPeriod">
-    <p>Days outside UK (current period): <span id="currentDays">0</span></p>
+    <p>Days outside UK (Until now): <span id="currentPeriodDays">0</span></p>
   </div>
   <div id="fullPeriod">
-    <p>Days outside UK (12-month period): <span id="fullPeriodDays">0</span></p>
+    <p>Days outside UK (Until application): <span id="fullPeriodDays">0</span></p>
   </div>
 `;
 

@@ -121,7 +121,7 @@ describe('UK90Check Extension', () => {
       expect(document.getElementById('currentDays').textContent).toBe('15');
     });
 
-    it('should calculate days correctly for full 12-month period', () => {
+    it('should calculate days correctly until application', () => {
       // Set up test data
       document.getElementById('startDate').value = '2024-01-01';
       addTravelEntry('2024-02-01', '2024-02-15');

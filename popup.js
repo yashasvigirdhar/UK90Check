@@ -36,7 +36,7 @@ function addTravelEntry(startDate = '', endDate = '') {
 
 /**
  * Calculates and displays the number of days spent outside the UK
- * for both the current period and the full 12-month period
+ * for both the current period and until application
  */
 function calculateDays() {
   const startDate = new Date(document.getElementById('startDate').value);
@@ -54,9 +54,9 @@ function calculateDays() {
   const currentDays = calculateDaysInPeriod(startDate, today, travelEntries);
   document.getElementById('currentDays').textContent = currentDays;
 
-  // Calculate days for full 12-month period
-  const fullPeriodDays = calculateDaysInPeriod(startDate, twelveMonthsFromStart, travelEntries);
-  document.getElementById('fullPeriodDays').textContent = fullPeriodDays;
+  // Calculate days until application
+  const daysUntilApplication = calculateDaysInPeriod(startDate, new Date(startDate.getFullYear() + 1, startDate.getMonth(), startDate.getDate()), travelEntries);
+  document.getElementById('fullPeriodDays').textContent = daysUntilApplication;
 
   // Save data
   saveData();
