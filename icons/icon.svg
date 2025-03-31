@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Calendar background -->
+  <rect x="16" y="16" width="96" height="96" rx="8" fill="#1a73e8"/>
+  
+  <!-- Calendar header -->
+  <rect x="16" y="16" width="96" height="24" rx="8" fill="#1557b0"/>
+  
+  <!-- Calendar grid lines -->
+  <line x1="16" y1="40" x2="112" y2="40" stroke="white" stroke-width="4" opacity="0.3"/>
+  <line x1="16" y1="64" x2="112" y2="64" stroke="white" stroke-width="4" opacity="0.3"/>
+  <line x1="16" y1="88" x2="112" y2="88" stroke="white" stroke-width="4" opacity="0.3"/>
+  
+  <!-- Checkmark -->
+  <path d="M40 80 L56 96 L88 64" stroke="white" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg> 

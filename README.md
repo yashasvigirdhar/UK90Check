@@ -1,27 +1,32 @@
-# UK90Check
+# UK90Check Chrome Extension
 
-Track your out-of-the-UK days before applying for the UK citizenship.
+A Chrome extension to help track days spent outside the UK in preparation for UK citizenship application.
 
 ## Overview
 
-This tool helps you track your days spent outside the UK in preparation for your UK citizenship application. According to UK citizenship rules, you cannot be outside the UK for more than 90 days in the 12 months preceding your citizenship application. The 12-month period can begin after you receive your Indefinite Leave to Remain (ILR).
+This extension helps you track your days spent outside the UK in preparation for your UK citizenship application. According to UK citizenship rules, you cannot be outside the UK for more than 90 days in the 12 months preceding your citizenship application. The 12-month period can begin after you receive your Indefinite Leave to Remain (ILR).
 
-## Input Requirements
+## Features
 
-### Start Date
-- This is when your 12-month tracking period begins
+- Track start date of your 12-month period
+- Add and remove travel dates
+- Automatic calculation of days spent outside the UK
+- Display of both current period and full 12-month period calculations
+- Data persistence using Chrome's local storage
 
-- You can select a date after your ILR approval if you were out of the UK for an extended period after receiving ILR
+## How to Use (Work in Progress)
 
-### Travel Dates
-- Enter all dates when you were/plan to be outside the UK after the start date
-- Include both past and future travel plans
-- Only start and end dates are required - no additional details needed
+This extension is currently under development and not yet available in the Chrome Web Store. Once published, you will be able to:
 
-## Output Information
+1. Install the extension from the Chrome Web Store
+2. Click the extension icon to open the popup
+3. Set your start date (when your 12-month period begins)
+4. Add your travel dates using the "Add Travel Date" button
+5. View your calculated days:
+   - Current period: Days outside UK from start date until today
+   - Full period: Days outside UK in the complete 12-month period
 
-The tool provides two key metrics:
+## License
 
-1. Days outside the UK from start date until today
-2. Days outside the UK in the full 12-month period (including planned future absences)
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 

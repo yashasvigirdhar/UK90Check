@@ -1,0 +1,30 @@
+{
+  "name": "uk90check",
+  "version": "1.0.0",
+  "description": "Track your out-of-the-UK days before applying for the UK citizenship",
+  "main": "popup.js",
+  "scripts": {
+    "test": "jest",
+    "build": "webpack --mode production",
+    "dev": "webpack --watch --mode development",
+    "start": "webpack serve --mode development"
+  },
+  "keywords": [
+    "uk",
+    "citizenship",
+    "visa",
+    "tracking"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.24.0",
+    "@babel/preset-env": "^7.24.0",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "webpack": "^5.90.3",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.0.2"
+  }
+}

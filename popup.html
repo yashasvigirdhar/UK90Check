@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>UK90Check</title>
+  <style>
+    body {
+      width: 400px;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    .travel-entry {
+      margin: 10px 0;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .remove-travel {
+      background-color: #ff4444;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .remove-travel:hover {
+      background-color: #cc0000;
+    }
+    #addTravel, #calculate {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 4px;
+      margin: 5px;
+    }
+    #addTravel:hover, #calculate:hover {
+      background-color: #45a049;
+    }
+    input[type="date"] {
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    #travelDates {
+      margin: 20px 0;
+    }
+    .period {
+      margin: 10px 0;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h2>UK90Check</h2>
+  <div>
+    <label for="startDate">Start Date:</label>
+    <input type="date" id="startDate" required>
+  </div>
+  <div id="travelDates"></div>
+  <button id="addTravel">Add Travel Date</button>
+  <button id="calculate">Calculate</button>
+  <div class="period" id="currentPeriod">
+    <p>Days outside UK (current period): <span id="currentDays">0</span></p>
+  </div>
+  <div class="period" id="fullPeriod">
+    <p>Days outside UK (12-month period): <span id="fullPeriodDays">0</span></p>
+  </div>
+  <script src="dist/popup.bundle.js"></script>
+</body>
+</html> 
