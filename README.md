@@ -14,6 +14,10 @@ This extension helps you track your days spent outside the UK in preparation for
 - Display of both current period and full 12-month period calculations
 - Data persistence using Chrome's local storage
 
+## Screenshot
+
+![UK90Check Extension in Action](screenshots/extension-in-action.png)
+
 ## How to Use (Work in Progress)
 
 This extension is currently under development and not yet available in the Chrome Web Store. Once published, you will be able to:
