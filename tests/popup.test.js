@@ -210,8 +210,25 @@ describe('UK90Check Extension', () => {
       addTravelEntry('2024-02-01', '2024-05-15'); // 105 days
       calculateDays();
 
-      expect(document.querySelector('.eligibility-label').textContent)
+      const eligibilityLabel = document.querySelector('.eligibility-label');
+      expect(eligibilityLabel.textContent)
         .toBe('You cannot apply for UK citizenship on');
+      expect(eligibilityLabel.classList.contains('not-eligible')).toBe(true);
+      expect(eligibilityLabel.classList.contains('eligible')).toBe(false);
+      expect(document.getElementById('eligibilityDate').textContent)
+        .toBe('31 December 2024');
+    });
+
+    it('should show positive eligibility message when days are within limit', () => {
+      document.getElementById('startDate').value = '2024-01-01';
+      addTravelEntry('2024-02-01', '2024-02-15'); // 15 days
+      calculateDays();
+
+      const eligibilityLabel = document.querySelector('.eligibility-label');
+      expect(eligibilityLabel.textContent)
+        .toBe('You can apply for UK citizenship on');
+      expect(eligibilityLabel.classList.contains('eligible')).toBe(true);
+      expect(eligibilityLabel.classList.contains('not-eligible')).toBe(false);
       expect(document.getElementById('eligibilityDate').textContent)
         .toBe('31 December 2024');
     });

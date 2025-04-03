@@ -194,25 +194,54 @@
       background-color: #f8f9fa;
       border-radius: 8px;
       padding: 15px;
-      margin: 10px 0;
+      margin: 5px 0;
     }
 
     .eligibility-info {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
+      text-align: center;
+      margin-top: 15px;
     }
 
     .eligibility-label {
-      font-size: 14px;
-      color: #7f8c8d;
+      font-size: 1.4em;
+      color: #666;
+      margin-bottom: 8px;
+      transition: color 0.3s ease;
       font-weight: 500;
     }
 
+    .eligibility-label.eligible {
+      color: #2ecc71;
+    }
+
+    .eligibility-label.not-eligible {
+      color: #e74c3c;
+    }
+
     .eligibility-value {
-      font-size: 18px;
-      color: #2c3e50;
+      font-size: 1.6em;
       font-weight: 600;
+      color: #2c3e50;
+      margin-top: 4px;
+    }
+
+    .help-text {
+      display: none;
+      margin-top: 12px;
+      padding: 10px;
+      background-color: #fff3cd;
+      border-radius: 6px;
+      color: #856404;
+      font-size: 0.9em;
+      line-height: 1.4;
+    }
+
+    .help-text.show {
+      display: block;
+    }
+
+    .help-message {
+      display: block;
     }
 
     .reference-link {
@@ -274,6 +303,9 @@
       <div class="eligibility-info">
         <div class="eligibility-label">You can apply for UK citizenship on</div>
         <div class="eligibility-value" id="eligibilityDate">-</div>
+        <div class="help-text" id="helpText">
+          <span class="help-message">You might be able to apply at a later date when you have not been outside the UK for 90 days in a 12-month period.</span>
+        </div>
       </div>
     </div>
 

@@ -48,83 +48,91 @@ function addTravelEntry(startDate = '', endDate = '') {
  * in the 12-month period from the start date
  */
 function calculateDays() {
-  const startDateInput = document.getElementById('startDate');
-  if (!startDateInput.value) return; // Don't calculate if no start date
-
-  const startDate = new Date(startDateInput.value);
-  const twelveMonthsFromStart = new Date(startDate);
-  twelveMonthsFromStart.setMonth(startDate.getMonth() + 12);
-
-  // Calculate and display eligibility date
-  const eligibilityDate = new Date(startDate);
-  eligibilityDate.setFullYear(eligibilityDate.getFullYear() + 1);
-  eligibilityDate.setDate(eligibilityDate.getDate() - 1); // Subtract one day to show the day before
-  const eligibilityDateElement = document.getElementById('eligibilityDate');
-  const eligibilityLabelElement = document.querySelector('.eligibility-label');
-  
-  // Get all travel entries
-  const travelEntries = Array.from(document.querySelectorAll('.travel-entry')).map(entry => ({
-    start: entry.querySelector('.travel-start').value,
-    end: entry.querySelector('.travel-end').value
-  })).filter(entry => entry.start && entry.end); // Filter out empty entries
-
-  // Calculate total days spent outside UK
-  let totalDaysOutside = 0;
-  travelEntries.forEach(entry => {
-    if (entry.start && entry.end && entry.start !== entry.end) {
-      const start = new Date(entry.start);
-      const end = new Date(entry.end);
-      // Include both start and end days in the count
-      const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-      totalDaysOutside += days;
-    }
-  });
-
-  // Calculate remaining days
-  const remainingDays = 90 - totalDaysOutside;
-
-  // Update eligibility message based on remaining days
-  if (remainingDays < 0) {
-    eligibilityLabelElement.textContent = "You cannot apply for UK citizenship on";
-  } else {
-    eligibilityLabelElement.textContent = "You can apply for UK citizenship on";
-  }
-  eligibilityDateElement.textContent = eligibilityDate.toLocaleDateString('en-GB', { 
-    day: 'numeric', 
-    month: 'long', 
-    year: 'numeric' 
-  });
-
-  // Update progress bar and color coding
-  const progressBarFill = document.querySelector('.progress-bar-fill');
+  const startDate = new Date(document.getElementById('startDate').value);
+  const today = new Date();
   const daysRemainingElement = document.querySelector('.days-remaining');
+  const progressBarFill = document.querySelector('.progress-bar-fill');
   const daysUsedElement = document.getElementById('daysUsed');
-  
-  // Calculate progress percentage (rounded to 2 decimal places)
-  const progressPercentage = Math.min(Math.round((totalDaysOutside / 90) * 100 * 100) / 100, 100);
-  progressBarFill.style.width = progressPercentage === 0 ? '0%' : `${progressPercentage.toFixed(2)}%`;
-  
-  // Update days remaining display
-  daysRemainingElement.textContent = `${Math.max(0, remainingDays)} days remaining`;
-  daysUsedElement.textContent = totalDaysOutside;
+  const eligibilityLabelElement = document.querySelector('.eligibility-label');
+  const eligibilityDateElement = document.getElementById('eligibilityDate');
+  const helpTextElement = document.getElementById('helpText');
 
-  // Update color coding based on remaining days
-  progressBarFill.classList.remove('green', 'yellow', 'red');
-  daysRemainingElement.classList.remove('green', 'yellow', 'red');
-
-  if (remainingDays > 60) {
-    progressBarFill.classList.add('green');
-    daysRemainingElement.classList.add('green');
-  } else if (remainingDays > 30) {
-    progressBarFill.classList.add('yellow');
-    daysRemainingElement.classList.add('yellow');
-  } else {
-    progressBarFill.classList.add('red');
-    daysRemainingElement.classList.add('red');
+  if (!startDate || isNaN(startDate.getTime())) {
+    daysRemainingElement.textContent = '90 days remaining';
+    daysRemainingElement.className = 'days-remaining green';
+    progressBarFill.style.width = '0%';
+    progressBarFill.className = 'progress-bar-fill green';
+    daysUsedElement.textContent = '0';
+    eligibilityLabelElement.textContent = 'You can apply for UK citizenship on';
+    eligibilityLabelElement.className = 'eligibility-label eligible';
+    eligibilityDateElement.textContent = '-';
+    helpTextElement.classList.remove('show');
+    return;
   }
 
-  // Save current state
-  saveData();
+  const oneYearFromStart = new Date(startDate);
+  oneYearFromStart.setFullYear(startDate.getFullYear() + 1);
+
+  const travelEntries = Array.from(document.querySelectorAll('.travel-entry')).map(entry => {
+    const start = new Date(entry.querySelector('.travel-start').value);
+    const end = new Date(entry.querySelector('.travel-end').value);
+    return { start, end };
+  });
+
+  let daysOutside = 0;
+  for (const entry of travelEntries) {
+    if (entry.start && entry.end && !isNaN(entry.start.getTime()) && !isNaN(entry.end.getTime())) {
+      const days = Math.ceil((entry.end - entry.start) / (1000 * 60 * 60 * 24)) + 1;
+      daysOutside += days;
+    }
+  }
+
+  const remainingDays = 90 - daysOutside;
+  daysRemainingElement.textContent = `${Math.max(0, remainingDays)} days remaining`;
+  daysUsedElement.textContent = daysOutside;
+
+  // Calculate progress percentage
+  const progressPercentage = Math.min(100, (daysOutside / 90) * 100);
+  progressBarFill.style.width = `${progressPercentage}%`;
+
+  // Update progress bar color based on remaining days
+  if (remainingDays > 30) {
+    daysRemainingElement.className = 'days-remaining green';
+    progressBarFill.className = 'progress-bar-fill green';
+  } else if (remainingDays > 15) {
+    daysRemainingElement.className = 'days-remaining yellow';
+    progressBarFill.className = 'progress-bar-fill yellow';
+  } else if (remainingDays > 0) {
+    daysRemainingElement.className = 'days-remaining orange';
+    progressBarFill.className = 'progress-bar-fill orange';
+  } else {
+    daysRemainingElement.className = 'days-remaining red';
+    progressBarFill.className = 'progress-bar-fill red';
+  }
+
+  // Calculate eligibility date (12 months from start date)
+  const eligibilityDate = new Date(startDate);
+  eligibilityDate.setFullYear(startDate.getFullYear() + 1);
+
+  // Update eligibility message and styling
+  if (remainingDays < 0) {
+    eligibilityLabelElement.textContent = 'You cannot apply for UK citizenship on';
+    eligibilityLabelElement.className = 'eligibility-label not-eligible';
+    helpTextElement.classList.add('show');
+  } else {
+    eligibilityLabelElement.textContent = 'You can apply for UK citizenship on';
+    eligibilityLabelElement.className = 'eligibility-label eligible';
+    helpTextElement.classList.remove('show');
+  }
+
+  eligibilityDateElement.textContent = eligibilityDate.toLocaleDateString('en-GB', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  saveCurrentState();
 }
 
 /**
