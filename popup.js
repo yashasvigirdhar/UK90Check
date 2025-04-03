@@ -19,11 +19,20 @@ function addTravelEntry(startDate = '', endDate = '') {
   const entry = document.createElement('div');
   entry.className = 'travel-entry';
   
+  // Set default dates to today if not provided
+  const today = new Date().toISOString().split('T')[0];
+  startDate = startDate || today;
+  endDate = endDate || today;
+  
   entry.innerHTML = `
     <input type="date" class="travel-start" value="${startDate}" required>
     <input type="date" class="travel-end" value="${endDate}" required>
-    <button class="remove-travel">Remove</button>
+    <span class="remove-travel" style="cursor: pointer; padding: 0 8px; font-size: 18px;">&times;</span>
   `;
+
+  // Add change event listeners to the date inputs
+  entry.querySelector('.travel-start').addEventListener('change', calculateDays);
+  entry.querySelector('.travel-end').addEventListener('change', calculateDays);
 
   entry.querySelector('.remove-travel').addEventListener('click', function() {
     entry.remove();
@@ -36,30 +45,57 @@ function addTravelEntry(startDate = '', endDate = '') {
 
 /**
  * Calculates and displays the number of days spent outside the UK
- * for both the current period and until application
+ * in the 12-month period from the start date
  */
 function calculateDays() {
-  const startDate = new Date(document.getElementById('startDate').value);
-  const today = new Date();
+  const startDateInput = document.getElementById('startDate');
+  if (!startDateInput.value) return; // Don't calculate if no start date
+
+  const startDate = new Date(startDateInput.value);
   const twelveMonthsFromStart = new Date(startDate);
   twelveMonthsFromStart.setMonth(startDate.getMonth() + 12);
 
   // Get all travel entries
-  const travelEntries = Array.from(document.querySelectorAll('.travel-entry')).map(entry => ({
-    start: new Date(entry.querySelector('.travel-start').value),
-    end: new Date(entry.querySelector('.travel-end').value)
-  }));
+  const travelEntries = Array.from(document.querySelectorAll('.travel-entry')).map(entry => {
+    const startInput = entry.querySelector('.travel-start');
+    const endInput = entry.querySelector('.travel-end');
+    
+    // Skip entries with empty dates or same start/end date (default state)
+    if (!startInput.value || !endInput.value || startInput.value === endInput.value) return null;
+    
+    return {
+      start: new Date(startInput.value),
+      end: new Date(endInput.value)
+    };
+  }).filter(entry => entry !== null); // Remove null entries
 
-  // Calculate days for current period
-  const currentDays = calculateDaysInPeriod(startDate, today, travelEntries);
-  document.getElementById('currentDays').textContent = currentDays;
-
-  // Calculate days until application
-  const daysUntilApplication = calculateDaysInPeriod(startDate, new Date(startDate.getFullYear() + 1, startDate.getMonth(), startDate.getDate()), travelEntries);
-  document.getElementById('fullPeriodDays').textContent = daysUntilApplication;
+  // Calculate days spent outside UK
+  const daysSpentOutside = calculateDaysInPeriod(startDate, twelveMonthsFromStart, travelEntries);
+  
+  // Calculate remaining days that can be traveled (90 - days spent)
+  const remainingDays = Math.max(0, 90 - daysSpentOutside);
+  
+  // Only update the display if the element exists
+  const fullPeriodDaysElement = document.getElementById('fullPeriodDays');
+  if (fullPeriodDaysElement) {
+    fullPeriodDaysElement.textContent = remainingDays;
+  }
 
   // Save data
   saveData();
+
+  console.log('🔄 Starting calculation...', {
+    startDate: startDate.toISOString().split('T')[0],
+    endDate: twelveMonthsFromStart.toISOString().split('T')[0]
+  });
+
+  console.log('📝 Travel entries found:', travelEntries.map(entry => ({
+    start: entry.start.toISOString().split('T')[0],
+    end: entry.end.toISOString().split('T')[0]
+  })));
+
+  console.log('📊 Total days spent outside UK:', daysSpentOutside);
+  console.log('✈️ Remaining days that can be traveled:', remainingDays);
 }
 
 /**
@@ -79,6 +115,23 @@ function calculateDaysInPeriod(startDate, endDate, travelEntries) {
     if (travelStart <= travelEnd) {
       const days = Math.ceil((travelEnd - travelStart) / (1000 * 60 * 60 * 24)) + 1;
       totalDays += days;
+
+      console.log('\n📅 Calculating days in period:', {
+        periodStart: startDate.toISOString().split('T')[0],
+        periodEnd: endDate.toISOString().split('T')[0]
+      });
+
+      console.log(`🛫 Travel entry ${travelEntries.indexOf(travel) + 1}:`, {
+        originalDates: {
+          start: travel.start.toISOString().split('T')[0],
+          end: travel.end.toISOString().split('T')[0]
+        },
+        adjustedDates: {
+          start: travelStart.toISOString().split('T')[0],
+          end: travelEnd.toISOString().split('T')[0]
+        },
+        daysCount: days
+      });
     }
   });
 
@@ -103,6 +156,9 @@ function saveData() {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+  // Add change event listener to start date
+  document.getElementById('startDate').addEventListener('change', calculateDays);
+
   // Load saved data
   chrome.storage.local.get(['startDate', 'travelDates'], function(result) {
     if (result.startDate) {
@@ -117,12 +173,11 @@ document.addEventListener('DOMContentLoaded', function() {
     calculateDays();
   });
 
-  // Add event listeners
+  // Add event listener for adding new travel entry
   document.getElementById('addTravel').addEventListener('click', () => {
     addTravelEntry();
     calculateDays(); // Calculate after adding a new entry
   });
-  document.getElementById('calculate').addEventListener('click', calculateDays);
 });
 
 // Export for testing
