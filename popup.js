@@ -55,6 +55,16 @@ function calculateDays() {
   const twelveMonthsFromStart = new Date(startDate);
   twelveMonthsFromStart.setMonth(startDate.getMonth() + 12);
 
+  // Calculate and display eligibility date
+  const eligibilityDate = new Date(startDate);
+  eligibilityDate.setMonth(startDate.getMonth() + 12);
+  eligibilityDate.setDate(startDate.getDate() - 1); // Subtract 1 day to show the day before 12 months
+  document.getElementById('eligibilityDate').textContent = eligibilityDate.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+
   // Get all travel entries
   const travelEntries = Array.from(document.querySelectorAll('.travel-entry')).map(entry => {
     const startInput = entry.querySelector('.travel-start');
@@ -69,21 +79,6 @@ function calculateDays() {
     };
   }).filter(entry => entry !== null); // Remove null entries
 
-  // Calculate days spent outside UK
-  const daysSpentOutside = calculateDaysInPeriod(startDate, twelveMonthsFromStart, travelEntries);
-  
-  // Calculate remaining days that can be traveled (90 - days spent)
-  const remainingDays = Math.max(0, 90 - daysSpentOutside);
-  
-  // Only update the display if the element exists
-  const fullPeriodDaysElement = document.getElementById('fullPeriodDays');
-  if (fullPeriodDaysElement) {
-    fullPeriodDaysElement.textContent = remainingDays;
-  }
-
-  // Save data
-  saveData();
-
   console.log('🔄 Starting calculation...', {
     startDate: startDate.toISOString().split('T')[0],
     endDate: twelveMonthsFromStart.toISOString().split('T')[0]
@@ -94,48 +89,60 @@ function calculateDays() {
     end: entry.end.toISOString().split('T')[0]
   })));
 
-  console.log('📊 Total days spent outside UK:', daysSpentOutside);
-  console.log('✈️ Remaining days that can be traveled:', remainingDays);
-}
-
-/**
- * Calculates the total number of days spent outside the UK within a given period
- * @param {Date} startDate - Start date of the period
- * @param {Date} endDate - End date of the period
- * @param {Array<{start: Date, end: Date}>} travelEntries - Array of travel periods
- * @returns {number} Total number of days spent outside the UK
- */
-function calculateDaysInPeriod(startDate, endDate, travelEntries) {
-  let totalDays = 0;
-
-  travelEntries.forEach(travel => {
-    const travelStart = new Date(Math.max(travel.start, startDate));
-    const travelEnd = new Date(Math.min(travel.end, endDate));
-    
-    if (travelStart <= travelEnd) {
-      const days = Math.ceil((travelEnd - travelStart) / (1000 * 60 * 60 * 24)) + 1;
-      totalDays += days;
-
-      console.log('\n📅 Calculating days in period:', {
-        periodStart: startDate.toISOString().split('T')[0],
-        periodEnd: endDate.toISOString().split('T')[0]
-      });
-
-      console.log(`🛫 Travel entry ${travelEntries.indexOf(travel) + 1}:`, {
-        originalDates: {
-          start: travel.start.toISOString().split('T')[0],
-          end: travel.end.toISOString().split('T')[0]
-        },
-        adjustedDates: {
-          start: travelStart.toISOString().split('T')[0],
-          end: travelEnd.toISOString().split('T')[0]
-        },
-        daysCount: days
-      });
-    }
+  // Calculate days spent outside UK
+  let daysSpentOutside = 0;
+  travelEntries.forEach(entry => {
+    const daysCount = Math.ceil((entry.end - entry.start) / (1000 * 60 * 60 * 24)) + 1;
+    daysSpentOutside += daysCount;
+    console.log('📅 Calculating days in period:', {
+      periodStart: entry.start.toISOString().split('T')[0],
+      periodEnd: entry.end.toISOString().split('T')[0]
+    });
+    console.log('🛫 Travel entry:', {
+      originalDates: {
+        start: entry.start.toISOString().split('T')[0],
+        end: entry.end.toISOString().split('T')[0]
+      },
+      adjustedDates: {
+        start: entry.start.toISOString().split('T')[0],
+        end: entry.end.toISOString().split('T')[0]
+      },
+      daysCount
+    });
   });
 
-  return totalDays;
+  console.log('📊 Total days spent outside UK:', daysSpentOutside);
+
+  // Calculate remaining days
+  const remainingDays = Math.max(0, 90 - daysSpentOutside);
+  console.log('✈️ Remaining days that can be traveled:', remainingDays);
+
+  // Update the display
+  const daysRemainingElements = document.querySelectorAll('.days-remaining');
+  daysRemainingElements.forEach(el => el.textContent = `${remainingDays} days remaining`);
+
+  // Update progress bar
+  const progressBarFill = document.querySelector('.progress-bar-fill');
+  const progressPercentage = Math.round((daysSpentOutside / 90) * 100 * 100) / 100;
+  progressBarFill.style.width = `${progressPercentage}%`;
+
+  // Update color coding based on remaining days
+  if (remainingDays > 60) {
+    daysRemainingElements.forEach(el => el.className = 'days-remaining green');
+    progressBarFill.className = 'progress-bar-fill green';
+  } else if (remainingDays > 30) {
+    daysRemainingElements.forEach(el => el.className = 'days-remaining yellow');
+    progressBarFill.className = 'progress-bar-fill yellow';
+  } else {
+    daysRemainingElements.forEach(el => el.className = 'days-remaining red');
+    progressBarFill.className = 'progress-bar-fill red';
+  }
+
+  // Update stats
+  document.getElementById('daysUsed').textContent = daysSpentOutside;
+
+  // Save the current state
+  saveData();
 }
 
 /**
@@ -185,7 +192,6 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     addTravelEntry,
     calculateDays,
-    calculateDaysInPeriod,
     saveData
   };
 } 

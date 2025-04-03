@@ -5,6 +5,7 @@
  * 1. Data Storage - Saving and loading user data
  * 2. Travel Entry Management - Adding and removing travel entries
  * 3. Days Calculation - Computing remaining days that can be traveled
+ * 4. UI Updates - Progress bar, color coding, and eligibility date
  */
 
 const { addTravelEntry, calculateDays, saveData } = require('../popup.js');
@@ -14,18 +15,19 @@ describe('UK90Check Extension', () => {
     // Clear all mocks before each test
     jest.clearAllMocks();
     
-    // Reset DOM
+    // Reset DOM with new UI elements
     document.body.innerHTML = `
       <input type="date" id="startDate" />
       <div id="travelDates"></div>
       <button id="addTravel">Add Travel Date</button>
-      <button id="calculate">Calculate</button>
-      <div id="currentPeriod" style="display: none;">
-        <p>Days outside UK (current period): <span id="currentDays">0</span></p>
+      <div class="days-remaining">90 days remaining</div>
+      <div class="progress-bar">
+        <div class="progress-bar-fill"></div>
       </div>
-      <div id="fullPeriod">
-        <p>Number of days you can travel until your application: <span id="fullPeriodDays">0</span></p>
+      <div class="progress-stats">
+        <span>Days used: <span id="daysUsed">0</span>/90</span>
       </div>
+      <div id="eligibilityDate">-</div>
     `;
 
     // Initialize event listeners
@@ -33,7 +35,6 @@ describe('UK90Check Extension', () => {
       addTravelEntry();
       calculateDays();
     });
-    document.getElementById('calculate').addEventListener('click', calculateDays);
   });
 
   describe('Data Storage', () => {
@@ -56,11 +57,14 @@ describe('UK90Check Extension', () => {
       setTimeout(() => {
         expect(document.getElementById('startDate').value).toBe('2024-01-01');
         expect(document.querySelectorAll('.travel-entry')).toHaveLength(1);
-        expect(document.getElementById('fullPeriodDays').textContent).toBe('75'); // 90 - 15 days
+        expect(document.querySelector('.days-remaining').textContent).toBe('75 days remaining');
+        expect(document.querySelector('.progress-bar-fill').style.width).toBe('16.67%');
+        expect(document.getElementById('daysUsed').textContent).toBe('15');
+        expect(document.getElementById('eligibilityDate').textContent).toBe('31 December 2024');
       }, 0);
     });
 
-    it('should save data when calculate is clicked', () => {
+    it('should save data when changes occur', () => {
       // Set up test data
       document.getElementById('startDate').value = '2024-01-01';
       addTravelEntry('2024-02-01', '2024-02-15');
@@ -79,79 +83,80 @@ describe('UK90Check Extension', () => {
   });
 
   describe('Travel Entry Management', () => {
-    it('should add new travel entry and calculate remaining days when addTravel is clicked', () => {
+    it('should add new travel entry and update UI when addTravel is clicked', () => {
       document.getElementById('startDate').value = '2024-01-01';
       document.getElementById('addTravel').dispatchEvent(new Event('click'));
       
       expect(document.querySelectorAll('.travel-entry')).toHaveLength(1);
-      expect(document.getElementById('fullPeriodDays').textContent).toBe('90'); // No days spent yet
+      expect(document.querySelector('.days-remaining').textContent).toBe('90 days remaining');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('0%');
+      expect(document.getElementById('daysUsed').textContent).toBe('0');
     });
 
-    it('should remove travel entry and recalculate remaining days when remove button is clicked', () => {
+    it('should remove travel entry and update UI when remove button is clicked', () => {
       // Set up test data
       document.getElementById('startDate').value = '2024-01-01';
       addTravelEntry('2024-02-01', '2024-02-15');
       calculateDays();
       
       expect(document.querySelectorAll('.travel-entry')).toHaveLength(1);
-      expect(document.getElementById('fullPeriodDays').textContent).toBe('75'); // 90 - 15 days
+      expect(document.querySelector('.days-remaining').textContent).toBe('75 days remaining');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('16.67%');
 
       // Remove the travel entry
       document.querySelector('.remove-travel').click();
       
       expect(document.querySelectorAll('.travel-entry')).toHaveLength(0);
-      expect(document.getElementById('fullPeriodDays').textContent).toBe('90'); // Back to full 90 days
+      expect(document.querySelector('.days-remaining').textContent).toBe('90 days remaining');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('0%');
     });
   });
 
-  describe('Days Calculation', () => {
-    it('should show 90 days when no travel dates are added', () => {
-      // Set up test data with just a start date
+  describe('Days Calculation and UI Updates', () => {
+    it('should show 90 days and green color when no travel dates are added', () => {
       document.getElementById('startDate').value = '2024-01-01';
-
-      // Trigger calculate
       calculateDays();
 
-      // Check that remaining days is 90 when no travel is recorded
-      expect(document.getElementById('fullPeriodDays').textContent).toBe('90');
+      expect(document.querySelector('.days-remaining').textContent).toBe('90 days remaining');
+      expect(document.querySelector('.days-remaining').classList.contains('green')).toBe(true);
+      expect(document.querySelector('.progress-bar-fill').classList.contains('green')).toBe(true);
     });
 
-    it('should calculate remaining days correctly for a single travel period', () => {
-      // Set up test data
+    it('should show yellow color when days are between 30-60', () => {
       document.getElementById('startDate').value = '2024-01-01';
-      addTravelEntry('2024-02-01', '2024-02-15');
-
-      // Trigger calculate
+      addTravelEntry('2024-02-01', '2024-03-15'); // 44 days
       calculateDays();
 
-      // Check remaining days calculation (90 - days spent)
-      expect(document.getElementById('fullPeriodDays').textContent).toBe('75');
+      expect(document.querySelector('.days-remaining').textContent).toBe('46 days remaining');
+      expect(document.querySelector('.days-remaining').classList.contains('yellow')).toBe(true);
+      expect(document.querySelector('.progress-bar-fill').classList.contains('yellow')).toBe(true);
     });
 
-    it('should calculate remaining days correctly for multiple travel periods', () => {
-      // Set up test data
+    it('should show red color when days are less than 30', () => {
       document.getElementById('startDate').value = '2024-01-01';
-      addTravelEntry('2024-02-01', '2024-02-15');
-      addTravelEntry('2024-03-01', '2024-03-15');
-
-      // Trigger calculate
+      addTravelEntry('2024-02-01', '2024-04-15'); // 75 days
       calculateDays();
 
-      // Check remaining days calculation (90 - total days spent)
-      expect(document.getElementById('fullPeriodDays').textContent).toBe('60'); // 90 - (15 + 15) days
+      expect(document.querySelector('.days-remaining').textContent).toBe('15 days remaining');
+      expect(document.querySelector('.days-remaining').classList.contains('red')).toBe(true);
+      expect(document.querySelector('.progress-bar-fill').classList.contains('red')).toBe(true);
     });
 
-    it('should not show negative remaining days', () => {
-      // Set up test data with more than 90 days of travel
+    it('should calculate and display eligibility date correctly', () => {
       document.getElementById('startDate').value = '2024-01-01';
-      addTravelEntry('2024-02-01', '2024-05-01'); // About 90 days
-      addTravelEntry('2024-06-01', '2024-06-15'); // Additional 15 days
-
-      // Trigger calculate
       calculateDays();
 
-      // Check that remaining days doesn't go below 0
-      expect(document.getElementById('fullPeriodDays').textContent).toBe('0');
+      expect(document.getElementById('eligibilityDate').textContent).toBe('31 December 2024');
+    });
+
+    it('should update eligibility date when start date changes', () => {
+      document.getElementById('startDate').value = '2024-01-01';
+      calculateDays();
+      expect(document.getElementById('eligibilityDate').textContent).toBe('31 December 2024');
+
+      document.getElementById('startDate').value = '2024-02-01';
+      calculateDays();
+      expect(document.getElementById('eligibilityDate').textContent).toBe('31 January 2025');
     });
   });
 }); 
