@@ -185,30 +185,9 @@
     .progress-bar-fill.red { background-color: #e74c3c; }
 
     .progress-stats {
-      display: flex;
-      justify-content: space-between;
-      font-size: 14px;
-      color: #7f8c8d;
-    }
-
-    .legend {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-top: 0;
-      font-size: 12px;
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .legend-color {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
+      text-align: center;
+      color: #666;
+      font-size: 0.9em;
     }
 
     .eligibility-container {
@@ -288,20 +267,6 @@
       </div>
       <div class="progress-stats">
         <span>Days used: <span id="daysUsed">0</span>/90</span>
-      </div>
-      <div class="legend">
-        <div class="legend-item">
-          <div class="legend-color" style="background: #2ecc71"></div>
-          <span>Ample</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color" style="background: #f1c40f"></div>
-          <span>Limited</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-color" style="background: #e74c3c"></div>
-          <span>Last few days</span>
-        </div>
       </div>
     </div>
 
