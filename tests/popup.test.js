@@ -204,6 +204,17 @@ describe('UK90Check Extension', () => {
       calculateDays();
       expect(document.getElementById('eligibilityDate').textContent).toBe('31 January 2025');
     });
+
+    it('should show negative eligibility message when days are over limit', () => {
+      document.getElementById('startDate').value = '2024-01-01';
+      addTravelEntry('2024-02-01', '2024-05-15'); // 105 days
+      calculateDays();
+
+      expect(document.querySelector('.eligibility-label').textContent)
+        .toBe('You cannot apply for UK citizenship on');
+      expect(document.getElementById('eligibilityDate').textContent)
+        .toBe('31 December 2024');
+    });
   });
 
   describe('UI Elements and Layout', () => {

@@ -57,91 +57,73 @@ function calculateDays() {
 
   // Calculate and display eligibility date
   const eligibilityDate = new Date(startDate);
-  eligibilityDate.setMonth(startDate.getMonth() + 12);
-  eligibilityDate.setDate(startDate.getDate() - 1); // Subtract 1 day to show the day before 12 months
-  document.getElementById('eligibilityDate').textContent = eligibilityDate.toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
-
+  eligibilityDate.setFullYear(eligibilityDate.getFullYear() + 1);
+  eligibilityDate.setDate(eligibilityDate.getDate() - 1); // Subtract one day to show the day before
+  const eligibilityDateElement = document.getElementById('eligibilityDate');
+  const eligibilityLabelElement = document.querySelector('.eligibility-label');
+  
   // Get all travel entries
-  const travelEntries = Array.from(document.querySelectorAll('.travel-entry')).map(entry => {
-    const startInput = entry.querySelector('.travel-start');
-    const endInput = entry.querySelector('.travel-end');
-    
-    // Skip entries with empty dates or same start/end date (default state)
-    if (!startInput.value || !endInput.value || startInput.value === endInput.value) return null;
-    
-    return {
-      start: new Date(startInput.value),
-      end: new Date(endInput.value)
-    };
-  }).filter(entry => entry !== null); // Remove null entries
+  const travelEntries = Array.from(document.querySelectorAll('.travel-entry')).map(entry => ({
+    start: entry.querySelector('.travel-start').value,
+    end: entry.querySelector('.travel-end').value
+  })).filter(entry => entry.start && entry.end); // Filter out empty entries
 
-  console.log('🔄 Starting calculation...', {
-    startDate: startDate.toISOString().split('T')[0],
-    endDate: twelveMonthsFromStart.toISOString().split('T')[0]
-  });
-
-  console.log('📝 Travel entries found:', travelEntries.map(entry => ({
-    start: entry.start.toISOString().split('T')[0],
-    end: entry.end.toISOString().split('T')[0]
-  })));
-
-  // Calculate days spent outside UK
-  let daysSpentOutside = 0;
+  // Calculate total days spent outside UK
+  let totalDaysOutside = 0;
   travelEntries.forEach(entry => {
-    const daysCount = Math.ceil((entry.end - entry.start) / (1000 * 60 * 60 * 24)) + 1;
-    daysSpentOutside += daysCount;
-    console.log('📅 Calculating days in period:', {
-      periodStart: entry.start.toISOString().split('T')[0],
-      periodEnd: entry.end.toISOString().split('T')[0]
-    });
-    console.log('🛫 Travel entry:', {
-      originalDates: {
-        start: entry.start.toISOString().split('T')[0],
-        end: entry.end.toISOString().split('T')[0]
-      },
-      adjustedDates: {
-        start: entry.start.toISOString().split('T')[0],
-        end: entry.end.toISOString().split('T')[0]
-      },
-      daysCount
-    });
+    if (entry.start && entry.end && entry.start !== entry.end) {
+      const start = new Date(entry.start);
+      const end = new Date(entry.end);
+      // Include both start and end days in the count
+      const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+      totalDaysOutside += days;
+    }
   });
-
-  console.log('📊 Total days spent outside UK:', daysSpentOutside);
 
   // Calculate remaining days
-  const remainingDays = Math.max(0, 90 - daysSpentOutside);
-  console.log('✈️ Remaining days that can be traveled:', remainingDays);
+  const remainingDays = 90 - totalDaysOutside;
 
-  // Update the display
-  const daysRemainingElements = document.querySelectorAll('.days-remaining');
-  daysRemainingElements.forEach(el => el.textContent = `${remainingDays} days remaining`);
+  // Update eligibility message based on remaining days
+  if (remainingDays < 0) {
+    eligibilityLabelElement.textContent = "You cannot apply for UK citizenship on";
+  } else {
+    eligibilityLabelElement.textContent = "You can apply for UK citizenship on";
+  }
+  eligibilityDateElement.textContent = eligibilityDate.toLocaleDateString('en-GB', { 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric' 
+  });
 
-  // Update progress bar
+  // Update progress bar and color coding
   const progressBarFill = document.querySelector('.progress-bar-fill');
-  const progressPercentage = Math.round((daysSpentOutside / 90) * 100 * 100) / 100;
-  progressBarFill.style.width = `${progressPercentage}%`;
+  const daysRemainingElement = document.querySelector('.days-remaining');
+  const daysUsedElement = document.getElementById('daysUsed');
+  
+  // Calculate progress percentage (rounded to 2 decimal places)
+  const progressPercentage = Math.min(Math.round((totalDaysOutside / 90) * 100 * 100) / 100, 100);
+  progressBarFill.style.width = progressPercentage === 0 ? '0%' : `${progressPercentage.toFixed(2)}%`;
+  
+  // Update days remaining display
+  daysRemainingElement.textContent = `${Math.max(0, remainingDays)} days remaining`;
+  daysUsedElement.textContent = totalDaysOutside;
 
   // Update color coding based on remaining days
+  progressBarFill.classList.remove('green', 'yellow', 'red');
+  daysRemainingElement.classList.remove('green', 'yellow', 'red');
+
   if (remainingDays > 60) {
-    daysRemainingElements.forEach(el => el.className = 'days-remaining green');
-    progressBarFill.className = 'progress-bar-fill green';
+    progressBarFill.classList.add('green');
+    daysRemainingElement.classList.add('green');
   } else if (remainingDays > 30) {
-    daysRemainingElements.forEach(el => el.className = 'days-remaining yellow');
-    progressBarFill.className = 'progress-bar-fill yellow';
+    progressBarFill.classList.add('yellow');
+    daysRemainingElement.classList.add('yellow');
   } else {
-    daysRemainingElements.forEach(el => el.className = 'days-remaining red');
-    progressBarFill.className = 'progress-bar-fill red';
+    progressBarFill.classList.add('red');
+    daysRemainingElement.classList.add('red');
   }
 
-  // Update stats
-  document.getElementById('daysUsed').textContent = daysSpentOutside;
-
-  // Save the current state
+  // Save current state
   saveData();
 }
 
