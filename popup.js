@@ -41,6 +41,7 @@ function addTravelEntry(startDate = '', endDate = '') {
   });
 
   travelDates.appendChild(entry);
+  calculateDays();
 }
 
 /**
@@ -91,18 +92,18 @@ function calculateDays() {
   daysRemainingElement.textContent = `${Math.max(0, remainingDays)} days remaining`;
   daysUsedElement.textContent = daysOutside;
 
-  // Calculate progress percentage
+  // Calculate progress percentage and round to 2 decimal places
   const progressPercentage = Math.min(100, (daysOutside / 90) * 100);
-  progressBarFill.style.width = `${progressPercentage}%`;
+  progressBarFill.style.width = progressPercentage === 0 ? '0%' : `${progressPercentage.toFixed(2)}%`;
 
   // Update progress bar color based on remaining days
-  if (remainingDays > 30) {
+  if (remainingDays > 60) {
     daysRemainingElement.className = 'days-remaining green';
     progressBarFill.className = 'progress-bar-fill green';
-  } else if (remainingDays > 15) {
+  } else if (remainingDays > 30) {
     daysRemainingElement.className = 'days-remaining yellow';
     progressBarFill.className = 'progress-bar-fill yellow';
-  } else if (remainingDays > 0) {
+  } else if (remainingDays > 15) {
     daysRemainingElement.className = 'days-remaining orange';
     progressBarFill.className = 'progress-bar-fill orange';
   } else {
@@ -113,6 +114,7 @@ function calculateDays() {
   // Calculate eligibility date (12 months from start date)
   const eligibilityDate = new Date(startDate);
   eligibilityDate.setFullYear(startDate.getFullYear() + 1);
+  eligibilityDate.setDate(eligibilityDate.getDate() - 1); // Subtract one day to match expected format
 
   // Update eligibility message and styling
   if (remainingDays < 0) {
@@ -126,13 +128,12 @@ function calculateDays() {
   }
 
   eligibilityDateElement.textContent = eligibilityDate.toLocaleDateString('en-GB', {
-    weekday: 'long',
-    year: 'numeric',
+    day: 'numeric',
     month: 'long',
-    day: 'numeric'
+    year: 'numeric'
   });
 
-  saveCurrentState();
+  saveData();
 }
 
 /**

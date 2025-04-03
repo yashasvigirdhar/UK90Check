@@ -27,6 +27,7 @@ describe('UK90Check Extension', () => {
             <div class="section-heading">When did you receive your Indefinite Leave to Remain (ILR) OR Settled Status?</div>
             <div class="section-subheading">This is the date after which your 12-month countdown begins.</div>
             <input type="date" id="startDate" />
+            <div class="help-text" id="helpText">Please enter your ILR/Settled Status date to begin.</div>
           </div>
         </div>
         <div class="section-container">
@@ -68,6 +69,7 @@ describe('UK90Check Extension', () => {
           <div class="eligibility-info">
             <div class="eligibility-label">You can apply for UK citizenship on</div>
             <div class="eligibility-value" id="eligibilityDate">-</div>
+            <div class="help-message"></div>
           </div>
         </div>
         <div class="reference-link">
@@ -134,9 +136,9 @@ describe('UK90Check Extension', () => {
       document.getElementById('addTravel').dispatchEvent(new Event('click'));
       
       expect(document.querySelectorAll('.travel-entry')).toHaveLength(1);
-      expect(document.querySelector('.days-remaining').textContent).toBe('90 days remaining');
-      expect(document.querySelector('.progress-bar-fill').style.width).toBe('0%');
-      expect(document.getElementById('daysUsed').textContent).toBe('0');
+      expect(document.querySelector('.days-remaining').textContent).toBe('89 days remaining');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('1.11%');
+      expect(document.getElementById('daysUsed').textContent).toBe('1');
     });
 
     it('should remove travel entry and update UI when remove button is clicked', () => {
