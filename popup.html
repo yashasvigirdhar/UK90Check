@@ -15,6 +15,35 @@
       gap: 20px;
     }
 
+    .extension-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .extension-icon {
+      width: 32px;
+      height: 32px;
+    }
+
+    .extension-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2c3e50;
+      text-align: center;
+    }
+
+    .section-container {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
     .input-group {
       display: flex;
       flex-direction: column;
@@ -22,8 +51,17 @@
     }
 
     .input-group label {
-      font-weight: 500;
-      color: #2c3e50;
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .subheading {
+      font-size: 0.9em;
+      color: #666;
+      margin-bottom: 8px;
+      line-height: 1.4;
     }
 
     .section-heading {
@@ -217,16 +255,26 @@
 </head>
 <body>
   <div class="container">
-    <div class="input-group">
-      <label for="startDate">When did you receive your ILR?</label>
-      <input type="date" id="startDate" required>
+    <div class="extension-header">
+      <img src="icons/icon48.png" alt="UK90Check" class="extension-icon">
+      <div class="extension-title">UK90Check</div>
     </div>
 
-    <div class="input-group">
-      <div class="section-heading">Travel Dates</div>
-      <div class="section-subheading">Add dates when you were outside the UK after receiving ILR, including any future travel plans.</div>
-      <button id="addTravel">Add Travel Date</button>
-      <div id="travelDates"></div>
+    <div class="section-container">
+      <div class="input-group">
+        <div class="section-heading">When did you receive your Indefinite Leave to Remain (ILR) OR Settled Status?</div>
+        <div class="section-subheading">This is the date after which your 12-month countdown begins.</div>
+        <input type="date" id="startDate" required>
+      </div>
+    </div>
+
+    <div class="section-container">
+      <div class="input-group">
+        <div class="section-heading">Travel Dates</div>
+        <div class="section-subheading">Add dates when you were outside the UK after receiving ILR, including any future travel plans.</div>
+        <button id="addTravel">Add Travel Date</button>
+        <div id="travelDates"></div>
+      </div>
     </div>
 
     <div class="progress-container">

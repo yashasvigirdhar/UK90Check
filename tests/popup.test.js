@@ -17,17 +17,63 @@ describe('UK90Check Extension', () => {
     
     // Reset DOM with new UI elements
     document.body.innerHTML = `
-      <input type="date" id="startDate" />
-      <div id="travelDates"></div>
-      <button id="addTravel">Add Travel Date</button>
-      <div class="days-remaining">90 days remaining</div>
-      <div class="progress-bar">
-        <div class="progress-bar-fill"></div>
+      <div class="container">
+        <div class="extension-header">
+          <img src="icons/icon48.png" alt="UK90Check" class="extension-icon">
+          <div class="extension-title">UK90Check</div>
+        </div>
+        <div class="section-container">
+          <div class="input-group">
+            <div class="section-heading">When did you receive your Indefinite Leave to Remain (ILR) OR Settled Status?</div>
+            <div class="section-subheading">This is the date after which your 12-month countdown begins.</div>
+            <input type="date" id="startDate" />
+          </div>
+        </div>
+        <div class="section-container">
+          <div class="input-group">
+            <div class="section-heading">Travel Dates</div>
+            <div class="section-subheading">Add dates when you were outside the UK after receiving ILR, including any future travel plans.</div>
+            <button id="addTravel">Add Travel Date</button>
+            <div id="travelDates"></div>
+          </div>
+        </div>
+        <div class="progress-container">
+          <div class="section-heading">Days Available for Future Travel</div>
+          <div class="section-subheading">You can spend up to 90 days outside the UK in the 12 months before applying for citizenship</div>
+          <div class="progress-header">
+            <div class="days-remaining">90 days remaining</div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-bar-fill"></div>
+          </div>
+          <div class="progress-stats">
+            <span>Days used: <span id="daysUsed">0</span>/90</span>
+          </div>
+          <div class="legend">
+            <div class="legend-item">
+              <div class="legend-color" style="background: #2ecc71"></div>
+              <span>Ample</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: #f1c40f"></div>
+              <span>Limited</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: #e74c3c"></div>
+              <span>Last few days</span>
+            </div>
+          </div>
+        </div>
+        <div class="eligibility-container">
+          <div class="eligibility-info">
+            <div class="eligibility-label">You can apply for UK citizenship on</div>
+            <div class="eligibility-value" id="eligibilityDate">-</div>
+          </div>
+        </div>
+        <div class="reference-link">
+          <a href="https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain" target="_blank">Read more about UK citizenship requirements on GOV.UK</a>
+        </div>
       </div>
-      <div class="progress-stats">
-        <span>Days used: <span id="daysUsed">0</span>/90</span>
-      </div>
-      <div id="eligibilityDate">-</div>
     `;
 
     // Initialize event listeners
@@ -157,6 +203,43 @@ describe('UK90Check Extension', () => {
       document.getElementById('startDate').value = '2024-02-01';
       calculateDays();
       expect(document.getElementById('eligibilityDate').textContent).toBe('31 January 2025');
+    });
+  });
+
+  describe('UI Elements and Layout', () => {
+    it('should display the extension header with icon and title', () => {
+      const header = document.querySelector('.extension-header');
+      const icon = document.querySelector('.extension-icon');
+      const title = document.querySelector('.extension-title');
+
+      expect(header).toBeTruthy();
+      expect(icon).toBeTruthy();
+      expect(icon.src).toContain('icons/icon48.png');
+      expect(title.textContent).toBe('UK90Check');
+    });
+
+    it('should display section containers with correct headings', () => {
+      const sectionContainers = document.querySelectorAll('.section-container');
+      expect(sectionContainers).toHaveLength(2);
+
+      const ilrSection = sectionContainers[0];
+      expect(ilrSection.querySelector('.section-heading').textContent)
+        .toBe('When did you receive your Indefinite Leave to Remain (ILR) OR Settled Status?');
+      expect(ilrSection.querySelector('.section-subheading').textContent)
+        .toBe('This is the date after which your 12-month countdown begins.');
+
+      const travelSection = sectionContainers[1];
+      expect(travelSection.querySelector('.section-heading').textContent).toBe('Travel Dates');
+      expect(travelSection.querySelector('.section-subheading').textContent)
+        .toBe('Add dates when you were outside the UK after receiving ILR, including any future travel plans.');
+    });
+
+    it('should display the GOV.UK reference link', () => {
+      const link = document.querySelector('.reference-link a');
+      expect(link).toBeTruthy();
+      expect(link.href).toBe('https://www.gov.uk/apply-citizenship-indefinite-leave-to-remain');
+      expect(link.target).toBe('_blank');
+      expect(link.textContent).toBe('Read more about UK citizenship requirements on GOV.UK');
     });
   });
 }); 
