@@ -27,7 +27,6 @@ describe('UK90Check Extension', () => {
             <div class="section-heading">When did you receive your Indefinite Leave to Remain (ILR) OR Settled Status?</div>
             <div class="section-subheading">This is the date after which your 12-month countdown begins.</div>
             <input type="date" id="startDate" />
-            <div class="help-text" id="helpText">Please enter your ILR/Settled Status date to begin.</div>
           </div>
         </div>
         <div class="section-container">
@@ -60,6 +59,10 @@ describe('UK90Check Extension', () => {
               <span>Limited</span>
             </div>
             <div class="legend-item">
+              <div class="legend-color" style="background: #e67e22"></div>
+              <span>Caution</span>
+            </div>
+            <div class="legend-item">
               <div class="legend-color" style="background: #e74c3c"></div>
               <span>Last few days</span>
             </div>
@@ -69,7 +72,9 @@ describe('UK90Check Extension', () => {
           <div class="eligibility-info">
             <div class="eligibility-label">You can apply for UK citizenship on</div>
             <div class="eligibility-value" id="eligibilityDate">-</div>
-            <div class="help-message"></div>
+            <div class="help-text" id="helpText">
+              <span class="help-message">You might be able to apply at a later date when you have not been outside the UK for 90 days in a 12-month period.</span>
+            </div>
           </div>
         </div>
         <div class="reference-link">
@@ -142,21 +147,24 @@ describe('UK90Check Extension', () => {
     });
 
     it('should remove travel entry and update UI when remove button is clicked', () => {
-      // Set up test data
+      // Set start date to 2024-01-01
       document.getElementById('startDate').value = '2024-01-01';
-      addTravelEntry('2024-02-01', '2024-02-15');
-      calculateDays();
       
+      // Add first travel entry: Jan 1-15
+      addTravelEntry('2024-01-01', '2024-01-15');
+      
+      // Add second travel entry: Jan 10-20
+      addTravelEntry('2024-01-10', '2024-01-20');
+      
+      // Remove the first travel entry
+      const removeButtons = document.querySelectorAll('.remove-travel');
+      removeButtons[0].dispatchEvent(new Event('click'));
+      
+      // Should show 79 days remaining (11 days used)
       expect(document.querySelectorAll('.travel-entry')).toHaveLength(1);
-      expect(document.querySelector('.days-remaining').textContent).toBe('75 days remaining');
-      expect(document.querySelector('.progress-bar-fill').style.width).toBe('16.67%');
-
-      // Remove the travel entry
-      document.querySelector('.remove-travel').click();
-      
-      expect(document.querySelectorAll('.travel-entry')).toHaveLength(0);
-      expect(document.querySelector('.days-remaining').textContent).toBe('90 days remaining');
-      expect(document.querySelector('.progress-bar-fill').style.width).toBe('0%');
+      expect(document.querySelector('.days-remaining').textContent).toBe('79 days remaining');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('12.22%');
+      expect(document.getElementById('daysUsed').textContent).toBe('11');
     });
   });
 
@@ -209,16 +217,40 @@ describe('UK90Check Extension', () => {
 
     it('should show negative eligibility message when days are over limit', () => {
       document.getElementById('startDate').value = '2024-01-01';
-      addTravelEntry('2024-02-01', '2024-05-15'); // 105 days
+      const addTravelButton = document.getElementById('addTravel');
+      
+      // Add a single travel entry that exceeds 90 days
+      addTravelButton.dispatchEvent(new Event('click'));
+      const entries = document.querySelectorAll('.travel-entry');
+      const lastEntry = entries[entries.length - 1];
+      lastEntry.querySelector('.travel-start').value = '2024-02-01';
+      lastEntry.querySelector('.travel-end').value = '2024-05-01'; // 91 days
+      
       calculateDays();
-
+      
       const eligibilityLabel = document.querySelector('.eligibility-label');
-      expect(eligibilityLabel.textContent)
-        .toBe('You cannot apply for UK citizenship on');
+      const helpText = document.getElementById('helpText');
+      const helpMessage = helpText.querySelector('.help-message');
+      
+      expect(eligibilityLabel.textContent).toBe('You cannot apply for UK citizenship on');
       expect(eligibilityLabel.classList.contains('not-eligible')).toBe(true);
       expect(eligibilityLabel.classList.contains('eligible')).toBe(false);
       expect(document.getElementById('eligibilityDate').textContent)
         .toBe('31 December 2024');
+      expect(helpMessage.textContent)
+        .toBe('You have spent more than 90 days outside the UK in the 12 months before applying for citizenship.');
+      expect(helpText.classList.contains('show')).toBe(true);
+    });
+
+    it('should hide help message when days are within limit', () => {
+      document.getElementById('startDate').value = '2024-01-01';
+      addTravelEntry('2024-02-01', '2024-02-15'); // 15 days
+      calculateDays();
+
+      const helpText = document.getElementById('helpText');
+      const helpMessage = helpText.querySelector('.help-message');
+      expect(helpMessage.textContent).toBe('');
+      expect(helpText.classList.contains('show')).toBe(false);
     });
 
     it('should show positive eligibility message when days are within limit', () => {
@@ -233,6 +265,99 @@ describe('UK90Check Extension', () => {
       expect(eligibilityLabel.classList.contains('not-eligible')).toBe(false);
       expect(document.getElementById('eligibilityDate').textContent)
         .toBe('31 December 2024');
+    });
+
+    it('should not count travel dates before the start date', () => {
+      // Set start date to 2024-01-01
+      document.getElementById('startDate').value = '2024-01-01';
+      
+      // Add travel entry for dates before start date
+      addTravelEntry('2023-12-01', '2023-12-15');
+      calculateDays();
+      
+      // Should still show 90 days since travel was before start date
+      expect(document.querySelector('.days-remaining').textContent).toBe('90 days remaining');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('0%');
+      expect(document.getElementById('daysUsed').textContent).toBe('0');
+    });
+
+    it('should count only days after start date for travel entries spanning start date', () => {
+      // Set start date to 2024-01-01
+      document.getElementById('startDate').value = '2024-01-01';
+      
+      // Add travel entry that starts before but ends after start date
+      addTravelEntry('2023-12-15', '2024-01-15');
+      calculateDays();
+      
+      // Should count only 15 days (from Jan 1 to Jan 15)
+      expect(document.querySelector('.days-remaining').textContent).toBe('75 days remaining');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('16.67%');
+      expect(document.getElementById('daysUsed').textContent).toBe('15');
+    });
+
+    it('should not count travel days after 12 months from start date', () => {
+      // Set start date to 2024-01-01
+      document.getElementById('startDate').value = '2024-01-01';
+      
+      // Add travel entry that starts after 12 months from start date
+      addTravelEntry('2025-01-15', '2025-02-15');
+      calculateDays();
+      
+      // Should still show 90 days since travel was after the 12-month period
+      expect(document.querySelector('.days-remaining').textContent).toBe('90 days remaining');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('0%');
+      expect(document.getElementById('daysUsed').textContent).toBe('0');
+    });
+
+    it('should handle overlapping travel entries correctly', () => {
+      // Set start date to 2024-01-01
+      document.getElementById('startDate').value = '2024-01-01';
+      
+      // Add first travel entry: Jan 1-15
+      addTravelEntry('2024-01-01', '2024-01-15');
+      
+      // Add overlapping travel entry: Jan 10-20
+      addTravelEntry('2024-01-10', '2024-01-20');
+      
+      calculateDays();
+      
+      // Should count unique days only (Jan 1-20 = 20 days)
+      expect(document.querySelector('.days-remaining').textContent).toBe('70 days remaining');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('22.22%');
+      expect(document.getElementById('daysUsed').textContent).toBe('20');
+    });
+
+    it('should count only days up to 12-month mark for travel entries spanning end date', () => {
+      // Set start date to 2024-01-01
+      document.getElementById('startDate').value = '2024-01-01';
+      
+      // Add travel entry that starts before but ends after the 12-month mark
+      addTravelEntry('2024-12-15', '2025-01-15');
+      calculateDays();
+      
+      // Should count only days up to Dec 31, 2024 (17 days)
+      expect(document.querySelector('.days-remaining').textContent).toBe('73 days remaining');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('18.89%');
+      expect(document.getElementById('daysUsed').textContent).toBe('17');
+    });
+
+    it('should show 0 days remaining when exceeding 90 days limit', () => {
+      // Set start date to 2024-01-01
+      document.getElementById('startDate').value = '2024-01-01';
+      
+      // Add travel entry for 100 days (exceeding 90 days limit)
+      addTravelEntry('2024-02-01', '2024-05-10');
+      calculateDays();
+      
+      // Should show 0 days remaining instead of -10
+      expect(document.querySelector('.days-remaining').textContent).toBe('0 days remaining');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('100%');
+      expect(document.getElementById('daysUsed').textContent).toBe('100');
+      
+      // Verify eligibility message
+      const eligibilityLabel = document.querySelector('.eligibility-label');
+      expect(eligibilityLabel.textContent).toBe('You cannot apply for UK citizenship on');
+      expect(eligibilityLabel.classList.contains('not-eligible')).toBe(true);
     });
   });
 
