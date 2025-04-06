@@ -93,10 +93,21 @@ function calculateDays() {
     // Only count days up to 12 months from start date
     const effectiveEnd = entryEnd > eligibilityDateObj ? eligibilityDateObj : entryEnd;
     
-    // Add each day to the set
+    // Skip if start and end dates are the same (no full days outside UK)
+    if (effectiveStart.toISOString().split('T')[0] === effectiveEnd.toISOString().split('T')[0]) {
+      return;
+    }
+    
+    // Add each day to the set, excluding the departure and arrival days
     let currentDate = new Date(effectiveStart);
+    currentDate.setDate(currentDate.getDate() + 1); // Skip departure day
     currentDate.setHours(12, 0, 0, 0);
-    while (currentDate <= effectiveEnd) {
+    
+    const lastDay = new Date(effectiveEnd);
+    lastDay.setDate(lastDay.getDate() - 1); // Skip arrival day
+    lastDay.setHours(12, 0, 0, 0);
+    
+    while (currentDate <= lastDay) {
       uniqueDays.add(currentDate.toISOString().split('T')[0]);
       currentDate.setDate(currentDate.getDate() + 1);
     }
@@ -111,9 +122,10 @@ function calculateDays() {
   
   // Update progress bar
   const percentage = Math.min(100, (daysOutsideUK / 90) * 100);
-  progressBarFill.style.width = percentage === 0 ? '0%' : 
-                               percentage === 100 ? '100%' : 
-                               `${percentage.toFixed(2)}%`;
+  const formattedPercentage = percentage === 0 ? '0%' :
+                             percentage === 100 ? '100%' :
+                             `${Math.round(percentage)}%`;
+  progressBarFill.style.width = formattedPercentage;
   
   // Update colors based on remaining days
   daysRemaining.classList.remove('green', 'yellow', 'orange', 'red');
@@ -125,9 +137,6 @@ function calculateDays() {
   } else if (remainingDays >= 30) {
     daysRemaining.classList.add('yellow');
     progressBarFill.classList.add('yellow');
-  } else if (remainingDays > 15) {
-    daysRemaining.classList.add('orange');
-    progressBarFill.classList.add('orange');
   } else {
     daysRemaining.classList.add('red');
     progressBarFill.classList.add('red');

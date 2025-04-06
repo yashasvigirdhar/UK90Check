@@ -52,8 +52,9 @@ const setupTestDOM = () => {
 
       <div class="section-container">
         <div class="input-group">
-          <div class="section-heading">Travel Dates</div>
-          <div class="section-subheading">Add dates when you were outside the UK after receiving ILR, including any future travel plans.</div>
+          <div class="section-heading">Travel Dates Outside the UK</div>
+          <div class="section-subheading">Add your departure and arrival dates for each trip.</div>
+          <div class="section-subheading" style="color: #e67e22;">Note: Only full days between departure and arrival count towards your 90-day limit.</div>
           <button id="addTravel">Add Travel Date</button>
           <div id="travelDates"></div>
         </div>
