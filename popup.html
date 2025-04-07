@@ -259,6 +259,102 @@
     .reference-link a:hover {
       text-decoration: underline;
     }
+
+    .donation-container {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+      border: 2px solid #e9ecef;
+    }
+
+    .donation-content {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .donation-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .donation-icon {
+      width: 24px;
+      height: 24px;
+    }
+
+    .donation-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2c3e50;
+      text-align: center;
+    }
+
+    .donation-message {
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+    }
+
+    .donation-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .donation-button {
+      padding: 8px 16px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+
+    .donation-button:hover {
+      background-color: #2980b9;
+    }
+
+    .donation-icon-small {
+      width: 24px;
+      height: 24px;
+    }
+
+    #bmc-button-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 5px;
+    }
+
+    .bmc-button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background-color: #40DCA5;
+      color: #ffffff;
+      border: 2px solid #000000;
+      border-radius: 4px;
+      font-family: 'Cookie', cursive;
+      font-size: 16px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .bmc-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .bmc-button img {
+      width: 20px;
+      height: 20px;
+    }
   </style>
 </head>
 <body>
@@ -306,6 +402,22 @@
         <div class="eligibility-value" id="eligibilityDate">-</div>
         <div class="help-text" id="helpText">
           <span class="help-message">You might be able to apply at a later date when you have not been outside the UK for 90 days in a 12-month period.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="donation-container">
+      <div class="donation-content">
+        <div class="donation-header">
+          <img src="icons/heart-icon.svg" alt="Heart" class="donation-icon">
+          <span class="donation-title">Support UK90Check</span>
+        </div>
+        <div class="donation-message">If this extension has helped you, consider supporting its development with any amount, even small contributions help!</div>
+        <div class="donation-buttons">
+          <a href="https://www.buymeacoffee.com/uSoY8yLkKu" target="_blank" class="bmc-button">
+            <img src="icons/coffee-icon.svg" alt="Coffee" class="donation-icon-small">
+            Buy me a coffee
+          </a>
         </div>
       </div>
     </div>

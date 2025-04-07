@@ -381,6 +381,7 @@ describe('UK90Check Extension', () => {
       expect(children[3].classList.contains('section-container')).toBe(true);
       expect(children[4].classList.contains('eligibility-container')).toBe(true);
       expect(children[5].classList.contains('reference-link')).toBe(true);
+      expect(children[6].classList.contains('donation-container')).toBe(true);
 
       // Verify content of each section
       expect(children[0].querySelector('.extension-title').textContent).toBe('UK90Check');
@@ -389,6 +390,7 @@ describe('UK90Check Extension', () => {
       expect(children[3].querySelector('.section-heading').textContent).toBe('Travel Dates Outside the UK');
       expect(children[4].querySelector('.eligibility-label').textContent).toBe('You can apply for UK citizenship on');
       expect(children[5].querySelector('a').textContent).toBe('Read more about UK citizenship requirements on GOV.UK');
+      expect(children[6].querySelector('.donation-title').textContent).toBe('Support UK90Check');
     });
 
     it('should display the note about counting days in the Travel Dates section', () => {
@@ -404,6 +406,134 @@ describe('UK90Check Extension', () => {
       
       // Verify the note has the orange color styling
       expect(noteSubheading.style.color).toBe('rgb(230, 126, 34)'); // #e67e22 in RGB
+    });
+  });
+
+  describe('Donation Section', () => {
+    it('should display the donation section with correct elements', () => {
+      // Check if donation container exists
+      const donationContainer = document.querySelector('.donation-container');
+      expect(donationContainer).toBeTruthy();
+
+      // Check if donation content exists
+      const donationContent = document.querySelector('.donation-content');
+      expect(donationContent).toBeTruthy();
+
+      // Check if donation header exists with heart icon and title
+      const donationHeader = document.querySelector('.donation-header');
+      expect(donationHeader).toBeTruthy();
+      
+      const heartIcon = donationHeader.querySelector('img[alt="Heart"]');
+      expect(heartIcon).toBeTruthy();
+      expect(heartIcon.src).toContain('heart-icon.svg');
+      
+      const donationTitle = donationHeader.querySelector('.donation-title');
+      expect(donationTitle).toBeTruthy();
+      expect(donationTitle.textContent).toBe('Support UK90Check');
+
+      // Check if donation message exists
+      const donationMessage = document.querySelector('.donation-message');
+      expect(donationMessage).toBeTruthy();
+      expect(donationMessage.textContent).toBe('If this extension has helped you, consider supporting its development with any amount, even small contributions help!');
+
+      // Check if Buy Me a Coffee button exists with correct attributes
+      const bmcButton = document.querySelector('.bmc-button');
+      expect(bmcButton).toBeTruthy();
+      expect(bmcButton.href).toBe('https://www.buymeacoffee.com/uSoY8yLkKu');
+      expect(bmcButton.target).toBe('_blank');
+      
+      const coffeeIcon = bmcButton.querySelector('img[alt="Coffee"]');
+      expect(coffeeIcon).toBeTruthy();
+      expect(coffeeIcon.src).toContain('coffee-icon.svg');
+      
+      expect(bmcButton.textContent.trim()).toBe('Buy me a coffee');
+    });
+
+    it('should verify the exact content of the donation section', () => {
+      // Get the donation container
+      const donationContainer = document.querySelector('.donation-container');
+      
+      // Verify the container has the correct structure
+      expect(donationContainer.children.length).toBe(1);
+      expect(donationContainer.children[0].classList.contains('donation-content')).toBe(true);
+      
+      // Get the donation content
+      const donationContent = donationContainer.querySelector('.donation-content');
+      
+      // Verify the content has the correct structure
+      expect(donationContent.children.length).toBe(3);
+      expect(donationContent.children[0].classList.contains('donation-header')).toBe(true);
+      expect(donationContent.children[1].classList.contains('donation-message')).toBe(true);
+      expect(donationContent.children[2].classList.contains('donation-buttons')).toBe(true);
+      
+      // Verify the header content
+      const donationHeader = donationContent.querySelector('.donation-header');
+      expect(donationHeader.children.length).toBe(2);
+      expect(donationHeader.children[0].tagName).toBe('IMG');
+      expect(donationHeader.children[0].alt).toBe('Heart');
+      expect(donationHeader.children[1].classList.contains('donation-title')).toBe(true);
+      expect(donationHeader.children[1].textContent).toBe('Support UK90Check');
+      
+      // Verify the message content
+      const donationMessage = donationContent.querySelector('.donation-message');
+      expect(donationMessage.textContent).toBe('If this extension has helped you, consider supporting its development with any amount, even small contributions help!');
+      
+      // Verify the buttons container
+      const donationButtons = donationContent.querySelector('.donation-buttons');
+      expect(donationButtons.children.length).toBe(1);
+      expect(donationButtons.children[0].classList.contains('bmc-button')).toBe(true);
+      
+      // Verify the Buy Me a Coffee button
+      const bmcButton = donationButtons.querySelector('.bmc-button');
+      expect(bmcButton.href).toBe('https://www.buymeacoffee.com/uSoY8yLkKu');
+      expect(bmcButton.target).toBe('_blank');
+      expect(bmcButton.children.length).toBe(2);
+      expect(bmcButton.children[0].tagName).toBe('IMG');
+      expect(bmcButton.children[0].alt).toBe('Coffee');
+      expect(bmcButton.children[1].textContent.trim()).toBe('Buy me a coffee');
+    });
+
+    it('should apply correct styles to donation elements', () => {
+      // Check donation container styles
+      const donationContainer = document.querySelector('.donation-container');
+      const containerStyles = window.getComputedStyle(donationContainer);
+      expect(containerStyles.backgroundColor).toBe('rgb(248, 249, 250)');
+      expect(containerStyles.borderRadius).toBe('8px');
+      expect(containerStyles.padding).toBe('15px');
+      expect(containerStyles.margin).toBe('10px 0px');
+      expect(containerStyles.border).toBe('2px solid rgb(233, 236, 239)');
+
+      // Check heart icon size
+      const heartIcon = document.querySelector('.donation-icon');
+      const iconStyles = window.getComputedStyle(heartIcon);
+      expect(iconStyles.width).toBe('24px');
+      expect(iconStyles.height).toBe('24px');
+
+      // Check Buy Me a Coffee button styles
+      const bmcButton = document.querySelector('.bmc-button');
+      const buttonStyles = window.getComputedStyle(bmcButton);
+      expect(buttonStyles.backgroundColor).toBe('rgb(64, 220, 165)');
+      expect(buttonStyles.color).toBe('rgb(255, 255, 255)');
+      expect(buttonStyles.border).toBe('2px solid rgb(0, 0, 0)');
+      expect(buttonStyles.borderRadius).toBe('4px');
+      expect(buttonStyles.fontSize).toBe('16px');
+      expect(buttonStyles.textDecoration).toBe('none');
+    });
+
+    it('should apply hover effects to Buy Me a Coffee button', () => {
+      const bmcButton = document.querySelector('.bmc-button');
+      
+      // Simulate hover
+      bmcButton.dispatchEvent(new MouseEvent('mouseover', {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      }));
+      
+      // Check if transform and box-shadow are applied on hover
+      const buttonStyles = window.getComputedStyle(bmcButton);
+      expect(buttonStyles.transform).toBe('translateY(-2px)');
+      expect(buttonStyles.boxShadow).toBe('rgba(0, 0, 0, 0.1) 0px 2px 4px');
     });
   });
 }); 
