@@ -22,9 +22,15 @@ This is my pilot project to explore AI-generated code using [Cursor](https://www
 ![UK90Check Extension in Action](screenshots/screenshot3.png)
 
 
-## How to Use (Work in Progress)
+## How to Use
 
-This extension is currently under development and not yet available in the Chrome Web Store. Once published, you will be able to install the extension from the Chrome Web Store.
+Install the chrome extension [here](https://chromewebstore.google.com/detail/fadnfhclnkcpgapnjjglabljimgciodj?utm_source=item-share-cb).
+
+## Support UK90Check ❤️
+
+If this extension has helped you, consider supporting its development with any amount, even small contributions help! 
+
+<a href="https://www.buymeacoffee.com/uSoY8yLkKu" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-green.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 ## License
 
