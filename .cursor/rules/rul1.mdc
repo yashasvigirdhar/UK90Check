@@ -1,10 +1,10 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: true
 ---
 
 # Your rule content
-
+Whenever you make any code change, make sure we update the tests if needed and all tests are passing.
 - You can @ files here
 - You can use markdown but dont have to

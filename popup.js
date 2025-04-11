@@ -144,11 +144,29 @@ function calculateDays() {
 
   // Update eligibility message
   if (daysOutsideUK > 90) {
-    eligibilityLabel.textContent = 'You cannot apply for UK citizenship on';
-    eligibilityLabel.classList.add('not-eligible');
-    eligibilityLabel.classList.remove('eligible');
-    helpMessage.textContent = 'You have spent more than 90 days outside the UK in the 12 months before applying for citizenship.';
-    helpText.classList.add('show');
+    if (daysOutsideUK <= 100) {
+      eligibilityLabel.textContent = 'You might still be eligible to apply for UK citizenship on';
+      eligibilityLabel.classList.add('not-eligible');
+      eligibilityLabel.classList.remove('eligible');
+      helpMessage.textContent = 'While you have exceeded the standard limit of90 days, this might be normally disregarded as you are still under the 100 days limit.';
+      helpText.classList.add('show');
+    } else if (daysOutsideUK <= 179) {
+      eligibilityLabel.textContent = 'You might still be eligible to apply for UK citizenship on';
+      eligibilityLabel.classList.add('not-eligible');
+      eligibilityLabel.classList.remove('eligible');
+      helpMessage.textContent = 'While you have exceeded 100 days, this might be normally disregarded only if all other requirements are met and you have demonstrated links with the UK through presence of family, established home and a substantial part of your estate.';
+      helpText.classList.add('show');
+      daysRemaining.classList.add('dark-red');
+      progressBarFill.classList.add('dark-red');
+    } else {
+      eligibilityLabel.textContent = 'You might not be eligible to apply for UK citizenship on';
+      eligibilityLabel.classList.add('not-eligible');
+      eligibilityLabel.classList.remove('eligible');
+      helpMessage.textContent = 'You have spent more than 179 days outside the UK in the 12 months before applying for citizenship. This exceeds the maximum allowed period.';
+      helpText.classList.add('show');
+      daysRemaining.classList.add('dark-red');
+      progressBarFill.classList.add('dark-red');
+    }
   } else {
     eligibilityLabel.textContent = 'You can apply for UK citizenship on';
     eligibilityLabel.classList.add('eligible');

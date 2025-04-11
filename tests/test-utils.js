@@ -10,6 +10,16 @@ const setupTestDOM = () => {
         <div class="extension-title">UK90Check</div>
       </div>
 
+      <div class="eligibility-container">
+        <div class="eligibility-info">
+          <div class="eligibility-label eligible">You can apply for UK citizenship on</div>
+          <div class="eligibility-value" id="eligibilityDate">-</div>
+          <div class="help-text" id="helpText">
+            <span class="help-message"></span>
+          </div>
+        </div>
+      </div>
+
       <div class="progress-container">
         <div class="section-heading">Days Available for Future Travel</div>
         <div class="section-subheading">You can spend up to 90 days outside the UK in the 12 months before applying for citizenship</div>
@@ -57,16 +67,6 @@ const setupTestDOM = () => {
           <div class="section-subheading" style="color: #e67e22;">Note: Only full days between departure and arrival count towards your 90-day limit.</div>
           <button id="addTravel">Add Travel Date</button>
           <div id="travelDates"></div>
-        </div>
-      </div>
-
-      <div class="eligibility-container">
-        <div class="eligibility-info">
-          <div class="eligibility-label">You can apply for UK citizenship on</div>
-          <div class="eligibility-value" id="eligibilityDate">-</div>
-          <div class="help-text" id="helpText">
-            <span class="help-message">You might be able to apply at a later date when you have not been outside the UK for 90 days in a 12-month period.</span>
-          </div>
         </div>
       </div>
 

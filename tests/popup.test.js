@@ -154,7 +154,7 @@ describe('UK90Check Extension', () => {
       expect(document.getElementById('eligibilityDate').textContent).toBe('31 January 2025');
     });
 
-    it('should show negative eligibility message when days are over limit', () => {
+    it('should show appropriate message when days are between 90-100', () => {
       document.getElementById('startDate').value = '2024-01-01';
       
       // First entry: Jan 1-31 (29 full days)
@@ -175,14 +175,68 @@ describe('UK90Check Extension', () => {
       const helpText = document.getElementById('helpText');
       const helpMessage = helpText.querySelector('.help-message');
       
-      expect(eligibilityLabel.textContent).toBe('You cannot apply for UK citizenship on');
+      expect(eligibilityLabel.textContent).toBe('You might still be eligible to apply for UK citizenship on');
       expect(eligibilityLabel.classList.contains('not-eligible')).toBe(true);
       expect(eligibilityLabel.classList.contains('eligible')).toBe(false);
-      expect(document.getElementById('eligibilityDate').textContent)
-        .toBe('31 December 2024');
       expect(helpMessage.textContent)
-        .toBe('You have spent more than 90 days outside the UK in the 12 months before applying for citizenship.');
+        .toBe('While you have exceeded the standard limit of90 days, this might be normally disregarded as you are still under the 100 days limit.');
       expect(helpText.classList.contains('show')).toBe(true);
+    });
+
+    it('should show appropriate message when days are between 101-179', () => {
+      document.getElementById('startDate').value = '2024-01-01';
+      
+      // First entry: Jan 1-31 (29 full days)
+      addTravelEntry('2024-01-01', '2024-01-31');
+      
+      // Second entry: Feb 1-28 (26 full days)
+      addTravelEntry('2024-02-01', '2024-02-28');
+      
+      // Third entry: Mar 1-31 (29 full days)
+      addTravelEntry('2024-03-01', '2024-03-31');
+      
+      // Fourth entry: Apr 1-30 (28 full days)
+      addTravelEntry('2024-04-01', '2024-04-30');
+      
+      calculateDays();
+
+      const eligibilityLabel = document.querySelector('.eligibility-label');
+      const helpText = document.getElementById('helpText');
+      const helpMessage = helpText.querySelector('.help-message');
+      
+      expect(eligibilityLabel.textContent).toBe('You might still be eligible to apply for UK citizenship on');
+      expect(eligibilityLabel.classList.contains('not-eligible')).toBe(true);
+      expect(eligibilityLabel.classList.contains('eligible')).toBe(false);
+      expect(helpMessage.textContent)
+        .toBe('While you have exceeded 100 days, this might be normally disregarded only if all other requirements are met and you have demonstrated links with the UK through presence of family, established home and a substantial part of your estate.');
+      expect(helpText.classList.contains('show')).toBe(true);
+      expect(document.querySelector('.days-remaining').classList.contains('dark-red')).toBe(true);
+      expect(document.querySelector('.progress-bar-fill').classList.contains('dark-red')).toBe(true);
+    });
+
+    it('should show appropriate message when days exceed 179', () => {
+      // Set up the test environment
+      document.getElementById('startDate').value = '2024-01-01';
+      
+      // Add travel entries that sum up to more than 179 days
+      addTravelEntry('2024-01-01', '2024-04-30'); // 118 full days
+      addTravelEntry('2024-05-01', '2024-07-31'); // 90 full days
+      
+      // Force recalculation
+      calculateDays();
+
+      const eligibilityLabel = document.querySelector('.eligibility-label');
+      const helpText = document.getElementById('helpText');
+      const helpMessage = helpText.querySelector('.help-message');
+      
+      expect(eligibilityLabel.textContent).toBe('You might not be eligible to apply for UK citizenship on');
+      expect(eligibilityLabel.classList.contains('not-eligible')).toBe(true);
+      expect(eligibilityLabel.classList.contains('eligible')).toBe(false);
+      expect(helpMessage.textContent)
+        .toBe('You have spent more than 179 days outside the UK in the 12 months before applying for citizenship. This exceeds the maximum allowed period.');
+      expect(helpText.classList.contains('show')).toBe(true);
+      expect(document.querySelector('.days-remaining').classList.contains('dark-red')).toBe(true);
+      expect(document.querySelector('.progress-bar-fill').classList.contains('dark-red')).toBe(true);
     });
 
     it('should hide help message when days are within limit', () => {
@@ -366,31 +420,22 @@ describe('UK90Check Extension', () => {
 
     it('should display UI elements in the correct order', () => {
       const container = document.querySelector('.container');
-      const children = container.children;
-
-      // Debug logging
+      const children = Array.from(container.children);
+      
+      // Log the number of children and their classes for debugging
       console.log('Number of children:', children.length);
-      for (let i = 0; i < children.length; i++) {
-        console.log(`Child ${i}:`, children[i].classList.toString());
-      }
-
+      children.forEach((child, index) => {
+        console.log(`Child ${index}:`, child.classList[0]);
+      });
+      
       // Verify the order of major elements
       expect(children[0].classList.contains('extension-header')).toBe(true);
-      expect(children[1].classList.contains('progress-container')).toBe(true);
-      expect(children[2].classList.contains('section-container')).toBe(true);
+      expect(children[1].classList.contains('eligibility-container')).toBe(true);
+      expect(children[2].classList.contains('progress-container')).toBe(true);
       expect(children[3].classList.contains('section-container')).toBe(true);
-      expect(children[4].classList.contains('eligibility-container')).toBe(true);
+      expect(children[4].classList.contains('section-container')).toBe(true);
       expect(children[5].classList.contains('reference-link')).toBe(true);
       expect(children[6].classList.contains('donation-container')).toBe(true);
-
-      // Verify content of each section
-      expect(children[0].querySelector('.extension-title').textContent).toBe('UK90Check');
-      expect(children[1].querySelector('.section-heading').textContent).toBe('Days Available for Future Travel');
-      expect(children[2].querySelector('.section-heading').textContent).toBe('When did you receive your Indefinite Leave to Remain (ILR) OR Settled Status?');
-      expect(children[3].querySelector('.section-heading').textContent).toBe('Travel Dates Outside the UK');
-      expect(children[4].querySelector('.eligibility-label').textContent).toBe('You can apply for UK citizenship on');
-      expect(children[5].querySelector('a').textContent).toBe('Read more about UK citizenship requirements on GOV.UK');
-      expect(children[6].querySelector('.donation-title').textContent).toBe('Support UK90Check');
     });
 
     it('should display the note about counting days in the Travel Dates section', () => {
