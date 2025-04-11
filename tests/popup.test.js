@@ -24,6 +24,9 @@ describe('UK90Check Extension', () => {
       addTravelEntry();
       calculateDays();
     });
+
+    // Add start date change listener
+    document.getElementById('startDate').addEventListener('change', calculateDays);
   });
 
   describe('Data Storage', () => {
@@ -78,7 +81,7 @@ describe('UK90Check Extension', () => {
       
       // When start and end dates are the same, no days should be counted
       expect(document.querySelectorAll('.travel-entry')).toHaveLength(1);
-      expect(document.querySelector('.days-remaining').textContent).toBe('90 days remaining');
+      expect(document.querySelector('.days-remaining').textContent).toBe('0 days used');
       expect(document.querySelector('.progress-bar-fill').style.width).toBe('0%');
       expect(document.getElementById('daysUsed').textContent).toBe('0');
     });
@@ -97,83 +100,84 @@ describe('UK90Check Extension', () => {
       const removeButtons = document.querySelectorAll('.remove-travel');
       removeButtons[0].dispatchEvent(new Event('click'));
       
-      // Should show 81 days remaining (9 days used)
+      // Should show 9 days used
       expect(document.querySelectorAll('.travel-entry')).toHaveLength(1);
-      expect(document.querySelector('.days-remaining').textContent).toBe('81 days remaining');
+      expect(document.querySelector('.days-remaining').textContent).toBe('9 days used');
       expect(document.querySelector('.progress-bar-fill').style.width).toBe('10%');
       expect(document.getElementById('daysUsed').textContent).toBe('9');
     });
-  });
 
-  describe('Days Calculation and UI Updates', () => {
-    it('should show message to provide ILR date when start date is not entered', () => {
-      document.getElementById('startDate').value = '';
-      calculateDays();
-
-      const eligibilityLabel = document.querySelector('.eligibility-label');
-      const helpText = document.getElementById('helpText');
-      const helpMessage = helpText.querySelector('.help-message');
-      
-      expect(eligibilityLabel.textContent).toBe('Please enter your ILR date below and add your travel entries to see eligibility information');
-      expect(eligibilityLabel.classList.contains('not-eligible')).toBe(true);
-      expect(eligibilityLabel.classList.contains('eligible')).toBe(false);
-      expect(helpMessage.textContent).toBe('');
-      expect(helpText.classList.contains('show')).toBe(false);
-      expect(document.getElementById('eligibilityDate').textContent).toBe('-');
-      expect(document.querySelector('.days-remaining').textContent).toBe('90 days remaining');
-      expect(document.querySelector('.progress-bar-fill').style.width).toBe('0%');
-      expect(document.getElementById('daysUsed').textContent).toBe('0');
-    });
-
-    it('should show 90 days and green color when no travel dates are added', () => {
+    it('should show 0 days used and green color when no travel dates are added', () => {
       document.getElementById('startDate').value = '2024-01-01';
       calculateDays();
 
-      expect(document.querySelector('.days-remaining').textContent).toBe('90 days remaining');
+      expect(document.querySelector('.days-remaining').textContent).toBe('0 days used');
       expect(document.querySelector('.days-remaining').classList.contains('green')).toBe(true);
       expect(document.querySelector('.progress-bar-fill').classList.contains('green')).toBe(true);
     });
 
-    it('should show yellow color when days are between 30-60', () => {
+    it('should not count travel dates before the start date', () => {
       document.getElementById('startDate').value = '2024-01-01';
-      // 42 full days (Feb 2- Mar 15)
-      addTravelEntry('2024-02-01', '2024-03-15');
+      addTravelEntry('2023-12-15', '2023-12-31');
       calculateDays();
 
-      expect(document.querySelector('.days-remaining').textContent).toBe('48 days remaining');
-      expect(document.querySelector('.days-remaining').classList.contains('yellow')).toBe(true);
-      expect(document.querySelector('.progress-bar-fill').classList.contains('yellow')).toBe(true);
+      expect(document.querySelector('.days-remaining').textContent).toBe('0 days used');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('0%');
+      expect(document.getElementById('daysUsed').textContent).toBe('0');
     });
 
-    it('should show red color when days are less than 30', () => {
+    it('should count only days after start date for travel entries spanning start date', () => {
       document.getElementById('startDate').value = '2024-01-01';
-      // 73 full days (Feb 2- Apr 14)
-      addTravelEntry('2024-02-01', '2024-04-15');
+      addTravelEntry('2023-12-15', '2024-01-15');
       calculateDays();
 
-      expect(document.querySelector('.days-remaining').textContent).toBe('17 days remaining');
-      expect(document.querySelector('.days-remaining').classList.contains('red')).toBe(true);
-      expect(document.querySelector('.progress-bar-fill').classList.contains('red')).toBe(true);
+      // 13 full days outside UK (Jan 2-14)
+      expect(document.querySelector('.days-remaining').textContent).toBe('13 days used');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('14%');
+      expect(document.getElementById('daysUsed').textContent).toBe('13');
     });
 
-    it('should calculate and display eligibility date correctly', () => {
+    it('should not count travel days after 12 months from start date', () => {
       document.getElementById('startDate').value = '2024-01-01';
+      // Entry completely after 12 months
+      addTravelEntry('2025-01-15', '2025-02-15');
       calculateDays();
 
-      expect(document.getElementById('eligibilityDate').textContent).toBe('31 December 2024');
+      expect(document.querySelector('.days-remaining').textContent).toBe('0 days used');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('0%');
+      expect(document.getElementById('daysUsed').textContent).toBe('0');
     });
 
-    it('should update eligibility date when start date changes', () => {
+    it('should handle overlapping travel entries correctly', () => {
       document.getElementById('startDate').value = '2024-01-01';
+      
+      // First entry: Jan 1-15 (13 full days)
+      addTravelEntry('2024-01-01', '2024-01-15');
+      
+      // Second entry: Jan 10-20 (9 full days, 5 days overlap)
+      addTravelEntry('2024-01-10', '2024-01-20');
+      
       calculateDays();
-      expect(document.getElementById('eligibilityDate').textContent).toBe('31 December 2024');
 
-      document.getElementById('startDate').value = '2024-02-01';
-      calculateDays();
-      expect(document.getElementById('eligibilityDate').textContent).toBe('31 January 2025');
+      // Total unique days: 18 (13 + 9 - 4 overlap)
+      expect(document.querySelector('.days-remaining').textContent).toBe('18 days used');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('20%');
+      expect(document.getElementById('daysUsed').textContent).toBe('18');
     });
 
-    it('should show appropriate message when days are between 90-100', () => {
+    it('should count only days up to 12-month mark for travel entries spanning end date', () => {
+      document.getElementById('startDate').value = '2024-01-01';
+      // Entry spanning end date: Dec 15, 2024 - Jan 15, 2025
+      addTravelEntry('2024-12-15', '2025-01-15');
+      calculateDays();
+
+      // 15 full days outside UK (Dec 16-31)
+      expect(document.querySelector('.days-remaining').textContent).toBe('15 days used');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('17%');
+      expect(document.getElementById('daysUsed').textContent).toBe('15');
+    });
+
+    it('should show 84 days used when exceeding 90 days limit', () => {
       document.getElementById('startDate').value = '2024-01-01';
       
       // First entry: Jan 1-31 (29 full days)
@@ -185,9 +189,137 @@ describe('UK90Check Extension', () => {
       // Third entry: Mar 1-31 (29 full days)
       addTravelEntry('2024-03-01', '2024-03-31');
       
-      // Fourth entry: Apr 1-15 (13 full days)
-      addTravelEntry('2024-04-01', '2024-04-15');
+      calculateDays();
+
+      // Total: 84 full days
+      expect(document.querySelector('.days-remaining').textContent).toBe('84 days used');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('93%');
+      expect(document.getElementById('daysUsed').textContent).toBe('84');
+    });
+
+    it('should not count departure and arrival days in travel entries', () => {
+      document.getElementById('startDate').value = '2024-01-01';
       
+      // A 3-day trip from Jan 1-3 should only count 1 full day (Jan 2)
+      addTravelEntry('2024-01-01', '2024-01-03');
+      calculateDays();
+      expect(document.getElementById('daysUsed').textContent).toBe('1');
+      expect(document.querySelector('.days-remaining').textContent).toBe('1 days used');
+      
+      // A 4-day trip from Jan 10-13 should only count 2 full days (Jan 11-12)
+      addTravelEntry('2024-01-10', '2024-01-13');
+      calculateDays();
+      expect(document.getElementById('daysUsed').textContent).toBe('3');
+      expect(document.querySelector('.days-remaining').textContent).toBe('3 days used');
+    });
+
+    it('should count 0 days for consecutive travel dates', () => {
+      document.getElementById('startDate').value = '2024-01-01';
+      
+      // Trip from Jan 1-2 (consecutive days) should count as 0 days
+      addTravelEntry('2024-01-01', '2024-01-02');
+      calculateDays();
+      expect(document.getElementById('daysUsed').textContent).toBe('0');
+      expect(document.querySelector('.days-remaining').textContent).toBe('0 days used');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('0%');
+      
+      // Trip from Jan 10-11 (consecutive days) should also count as 0 days
+      addTravelEntry('2024-01-10', '2024-01-11');
+      calculateDays();
+      expect(document.getElementById('daysUsed').textContent).toBe('0');
+      expect(document.querySelector('.days-remaining').textContent).toBe('0 days used');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('0%');
+    });
+
+    it('should show green color when days used are 50 or less', () => {
+      document.getElementById('startDate').value = '2024-01-01';
+      // 50 full days (Jan 2 - Feb 20)
+      addTravelEntry('2024-01-01', '2024-02-21');
+      calculateDays();
+
+      expect(document.querySelector('.days-remaining').textContent).toBe('50 days used');
+      expect(document.querySelector('.days-remaining').classList.contains('green')).toBe(true);
+      expect(document.querySelector('.progress-bar-fill').classList.contains('green')).toBe(true);
+    });
+
+    it('should show yellow color when days used are between 51 and 75', () => {
+      document.getElementById('startDate').value = '2024-01-01';
+      // 75 full days (Jan 2 - Mar 16)
+      addTravelEntry('2024-01-01', '2024-03-17');
+      calculateDays();
+
+      expect(document.querySelector('.days-remaining').textContent).toBe('75 days used');
+      expect(document.querySelector('.days-remaining').classList.contains('yellow')).toBe(true);
+      expect(document.querySelector('.progress-bar-fill').classList.contains('yellow')).toBe(true);
+    });
+
+    it('should show orange color when days used are between 76 and 90', () => {
+      document.getElementById('startDate').value = '2024-01-01';
+      // 90 full days (Jan 2 - Mar 31)
+      addTravelEntry('2024-01-01', '2024-04-01');
+      calculateDays();
+
+      expect(document.querySelector('.days-remaining').textContent).toBe('90 days used');
+      expect(document.querySelector('.days-remaining').classList.contains('orange')).toBe(true);
+      expect(document.querySelector('.progress-bar-fill').classList.contains('orange')).toBe(true);
+    });
+
+    it('should show red color when days used exceed 90', () => {
+      document.getElementById('startDate').value = '2024-01-01';
+      // 100 full days (Jan 2 - Apr 10)
+      addTravelEntry('2024-01-01', '2024-04-11');
+      calculateDays();
+
+      expect(document.querySelector('.days-remaining').textContent).toBe('100 days used');
+      expect(document.querySelector('.days-remaining').classList.contains('red')).toBe(true);
+      expect(document.querySelector('.progress-bar-fill').classList.contains('red')).toBe(true);
+    });
+
+    it('should show message to provide ILR date when start date is not entered', () => {
+      document.getElementById('startDate').value = '';
+      calculateDays();
+
+      const eligibilityLabel = document.querySelector('.eligibility-label');
+      const helpText = document.getElementById('helpText');
+      const helpMessage = helpText.querySelector('.help-message');
+      const daysUsed = document.getElementById('daysUsed');
+      const progressContainer = document.querySelector('.progress-container');
+      
+      expect(daysUsed.textContent).toBe('0');
+      expect(progressContainer.style.display).toBe('none');
+      expect(eligibilityLabel.textContent).toBe('Please enter your ILR date below and add your travel entries to see eligibility information');
+      expect(eligibilityLabel.classList.contains('not-eligible')).toBe(true);
+      expect(eligibilityLabel.classList.contains('eligible')).toBe(false);
+      expect(helpMessage.textContent).toBe('');
+      expect(helpText.classList.contains('show')).toBe(false);
+      expect(document.getElementById('eligibilityDate').textContent).toBe('-');
+
+      // Verify progress container is shown when ILR date is provided
+      document.getElementById('startDate').value = '2024-01-01';
+      document.getElementById('startDate').dispatchEvent(new Event('change'));
+      expect(progressContainer.style.display).toBe('block');
+    });
+
+    it('should show positive eligibility message when days are within limit', () => {
+      document.getElementById('startDate').value = '2024-01-01';
+      addTravelEntry('2024-02-01', '2024-02-15'); // 13 days
+      calculateDays();
+
+      const eligibilityLabel = document.querySelector('.eligibility-label');
+      const helpText = document.getElementById('helpText');
+      const helpMessage = helpText.querySelector('.help-message');
+      
+      expect(eligibilityLabel.textContent).toBe('You can apply for UK citizenship on');
+      expect(eligibilityLabel.classList.contains('eligible')).toBe(true);
+      expect(eligibilityLabel.classList.contains('not-eligible')).toBe(false);
+      expect(helpMessage.textContent).toBe('');
+      expect(helpText.classList.contains('show')).toBe(false);
+    });
+
+    it('should show appropriate message when days are between 90-100', () => {
+      document.getElementById('startDate').value = '2024-01-01';
+      addTravelEntry('2024-01-01', '2024-04-01'); // 90 days
+      addTravelEntry('2024-04-02', '2024-04-12'); // Additional 10 days
       calculateDays();
 
       const eligibilityLabel = document.querySelector('.eligibility-label');
@@ -198,25 +330,13 @@ describe('UK90Check Extension', () => {
       expect(eligibilityLabel.classList.contains('not-eligible')).toBe(true);
       expect(eligibilityLabel.classList.contains('eligible')).toBe(false);
       expect(helpMessage.textContent)
-        .toBe('While you have exceeded the standard limit of90 days, this might be normally disregarded as you are still under the 100 days limit.');
+        .toBe('While you have exceeded the standard limit of 90 days, this might be normally disregarded as you are still under the 100 days limit.');
       expect(helpText.classList.contains('show')).toBe(true);
     });
 
     it('should show appropriate message when days are between 101-179', () => {
       document.getElementById('startDate').value = '2024-01-01';
-      
-      // First entry: Jan 1-31 (29 full days)
-      addTravelEntry('2024-01-01', '2024-01-31');
-      
-      // Second entry: Feb 1-28 (26 full days)
-      addTravelEntry('2024-02-01', '2024-02-28');
-      
-      // Third entry: Mar 1-31 (29 full days)
-      addTravelEntry('2024-03-01', '2024-03-31');
-      
-      // Fourth entry: Apr 1-30 (28 full days)
-      addTravelEntry('2024-04-01', '2024-04-30');
-      
+      addTravelEntry('2024-01-01', '2024-05-01'); // About 120 days
       calculateDays();
 
       const eligibilityLabel = document.querySelector('.eligibility-label');
@@ -234,14 +354,8 @@ describe('UK90Check Extension', () => {
     });
 
     it('should show appropriate message when days exceed 179', () => {
-      // Set up the test environment
       document.getElementById('startDate').value = '2024-01-01';
-      
-      // Add travel entries that sum up to more than 179 days
-      addTravelEntry('2024-01-01', '2024-04-30'); // 118 full days
-      addTravelEntry('2024-05-01', '2024-07-31'); // 90 full days
-      
-      // Force recalculation
+      addTravelEntry('2024-01-01', '2024-07-01'); // About 180 days
       calculateDays();
 
       const eligibilityLabel = document.querySelector('.eligibility-label');
@@ -258,144 +372,165 @@ describe('UK90Check Extension', () => {
       expect(document.querySelector('.progress-bar-fill').classList.contains('dark-red')).toBe(true);
     });
 
-    it('should hide help message when days are within limit', () => {
+    it('should recalculate days when start date changes', () => {
+      // Set initial state
       document.getElementById('startDate').value = '2024-01-01';
-      addTravelEntry('2024-02-01', '2024-02-15'); // 15 days
+      addTravelEntry('2024-02-01', '2024-02-15'); // 13 days
       calculateDays();
-
-      const helpText = document.getElementById('helpText');
-      const helpMessage = helpText.querySelector('.help-message');
-      expect(helpMessage.textContent).toBe('');
-      expect(helpText.classList.contains('show')).toBe(false);
-    });
-
-    it('should show positive eligibility message when days are within limit', () => {
-      document.getElementById('startDate').value = '2024-01-01';
-      addTravelEntry('2024-02-01', '2024-02-15'); // 15 days
-      calculateDays();
-
-      const eligibilityLabel = document.querySelector('.eligibility-label');
-      expect(eligibilityLabel.textContent)
-        .toBe('You can apply for UK citizenship on');
-      expect(eligibilityLabel.classList.contains('eligible')).toBe(true);
-      expect(eligibilityLabel.classList.contains('not-eligible')).toBe(false);
-      expect(document.getElementById('eligibilityDate').textContent)
-        .toBe('31 December 2024');
-    });
-
-    it('should not count travel dates before the start date', () => {
-      document.getElementById('startDate').value = '2024-01-01';
-      addTravelEntry('2023-12-15', '2023-12-31');
-      calculateDays();
-
-      expect(document.querySelector('.days-remaining').textContent).toBe('90 days remaining');
-      expect(document.querySelector('.progress-bar-fill').style.width).toBe('0%');
-      expect(document.getElementById('daysUsed').textContent).toBe('0');
-    });
-
-    it('should count only days after start date for travel entries spanning start date', () => {
-      document.getElementById('startDate').value = '2024-01-01';
-      addTravelEntry('2023-12-15', '2024-01-15');
-      calculateDays();
-
-      // 13 full days outside UK (Jan 2-14)
-      expect(document.querySelector('.days-remaining').textContent).toBe('77 days remaining');
-      expect(document.querySelector('.progress-bar-fill').style.width).toBe('14%');
       expect(document.getElementById('daysUsed').textContent).toBe('13');
-    });
 
-    it('should not count travel days after 12 months from start date', () => {
-      document.getElementById('startDate').value = '2024-01-01';
-      // Entry completely after 12 months
-      addTravelEntry('2025-01-15', '2025-02-15');
-      calculateDays();
+      // Change start date to after the travel entry
+      const startDateInput = document.getElementById('startDate');
+      startDateInput.value = '2024-02-16';
+      startDateInput.dispatchEvent(new Event('change'));
 
-      expect(document.querySelector('.days-remaining').textContent).toBe('90 days remaining');
-      expect(document.querySelector('.progress-bar-fill').style.width).toBe('0%');
+      // Should show 0 days as travel entry is before start date
       expect(document.getElementById('daysUsed').textContent).toBe('0');
     });
 
-    it('should handle overlapping travel entries correctly', () => {
+    it('should recalculate days when travel dates change', () => {
+      document.getElementById('startDate').value = '2024-01-01';
+      addTravelEntry('2024-02-01', '2024-02-15'); // 13 days
+
+      // Change travel end date
+      const travelEntry = document.querySelector('.travel-entry');
+      const endDateInput = travelEntry.querySelector('.travel-end');
+      endDateInput.value = '2024-02-20';
+      endDateInput.dispatchEvent(new Event('change'));
+
+      // Should now show 18 days
+      expect(document.getElementById('daysUsed').textContent).toBe('18');
+    });
+
+    it('should handle multiple overlapping travel entries correctly', () => {
       document.getElementById('startDate').value = '2024-01-01';
       
       // First entry: Jan 1-15 (13 full days)
       addTravelEntry('2024-01-01', '2024-01-15');
       
-      // Second entry: Jan 10-20 (9 full days, 5 days overlap)
+      // Second entry: Jan 10-20 (9 full days, 5 days overlap with first)
       addTravelEntry('2024-01-10', '2024-01-20');
+      
+      // Third entry: Jan 15-25 (9 full days, overlaps with both)
+      addTravelEntry('2024-01-15', '2024-01-25');
       
       calculateDays();
 
-      // Total unique days: 17 (13 + 9 - 5 overlap)
-      expect(document.querySelector('.days-remaining').textContent).toBe('72 days remaining');
-      expect(document.querySelector('.progress-bar-fill').style.width).toBe('20%');
-      expect(document.getElementById('daysUsed').textContent).toBe('18');
+      // Total unique days: 23 (13 + 9 + 9 - overlaps)
+      expect(document.getElementById('daysUsed').textContent).toBe('23');
     });
 
-    it('should count only days up to 12-month mark for travel entries spanning end date', () => {
+    it('should handle travel entries exactly at 12-month boundary', () => {
       document.getElementById('startDate').value = '2024-01-01';
-      // Entry spanning end date: Dec 15, 2024 - Jan 15, 2025
-      addTravelEntry('2024-12-15', '2025-01-15');
+      
+      // Entry ending exactly on Dec 31, 2024
+      addTravelEntry('2024-12-15', '2024-12-31');
       calculateDays();
+      expect(document.getElementById('daysUsed').textContent).toBe('15');
 
-      // 15 full days outside UK (Dec 16-31)
-      expect(document.querySelector('.days-remaining').textContent).toBe('75 days remaining');
-      expect(document.querySelector('.progress-bar-fill').style.width).toBe('17%');
+      // Entry starting exactly on Jan 1, 2025 should not be counted
+      addTravelEntry('2025-01-01', '2025-01-15');
+      calculateDays();
       expect(document.getElementById('daysUsed').textContent).toBe('15');
     });
 
-    it('should show 0 days remaining when exceeding 90 days limit', () => {
+    it('should handle travel entries spanning multiple months and years', () => {
       document.getElementById('startDate').value = '2024-01-01';
       
-      // First entry: Jan 1-31 (29 full days)
-      addTravelEntry('2024-01-01', '2024-01-31');
-      
-      // Second entry: Feb 1-28 (26 full days)
-      addTravelEntry('2024-02-01', '2024-02-28');
-      
-      // Third entry: Mar 1-31 (29 full days)
-      addTravelEntry('2024-03-01', '2024-03-31');
-      
+      // Entry spanning 3 months
+      addTravelEntry('2024-01-15', '2024-03-15');
       calculateDays();
+      
+      // Should count 59 days (Jan 16-31: 16 days, Feb 1-29: 29 days, Mar 1-14: 14 days)
+      expect(document.getElementById('daysUsed').textContent).toBe('59');
 
-      // Total: 84 full days
-      expect(document.querySelector('.days-remaining').textContent).toBe('6 days remaining');
-      expect(document.querySelector('.progress-bar-fill').style.width).toBe('93%');
-      expect(document.getElementById('daysUsed').textContent).toBe('84');
+      // Entry spanning year boundary (but within 12-month period)
+      addTravelEntry('2024-12-15', '2025-01-15');
+      calculateDays();
+      
+      // Previous 59 days + 15 days (Dec 16-31)
+      expect(document.getElementById('daysUsed').textContent).toBe('74');
     });
 
-    it('should not count departure and arrival days in travel entries', () => {
+    it('should reset all UI elements and calculations when ILR date is cleared', () => {
+      // Set up initial state with ILR date and travel entries
       document.getElementById('startDate').value = '2024-01-01';
-      
-      // A 3-day trip from Jan 1-3 should only count 1 full day (Jan 2)
-      addTravelEntry('2024-01-01', '2024-01-03');
+      addTravelEntry('2024-02-01', '2024-02-15'); // 13 days
       calculateDays();
-      expect(document.getElementById('daysUsed').textContent).toBe('1');
-      expect(document.querySelector('.days-remaining').textContent).toBe('89 days remaining');
-      
-      // A 4-day trip from Jan 10-13 should only count 2 full days (Jan 11-12)
-      addTravelEntry('2024-01-10', '2024-01-13');
-      calculateDays();
-      expect(document.getElementById('daysUsed').textContent).toBe('3');
-      expect(document.querySelector('.days-remaining').textContent).toBe('87 days remaining');
+
+      // Verify initial state
+      expect(document.getElementById('daysUsed').textContent).toBe('13');
+      expect(document.querySelector('.days-remaining').textContent).toBe('13 days used');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('14%');
+      expect(document.getElementById('eligibilityDate').textContent).toBe('31 December 2024');
+      expect(document.querySelector('.eligibility-label').textContent).toBe('You can apply for UK citizenship on');
+      expect(document.querySelector('.progress-container').style.display).toBe('block');
+
+      // Clear the ILR date
+      document.getElementById('startDate').value = '';
+      document.getElementById('startDate').dispatchEvent(new Event('change'));
+
+      // Verify all UI elements are reset
+      expect(document.getElementById('daysUsed').textContent).toBe('0');
+      expect(document.querySelector('.progress-container').style.display).toBe('none');
+      expect(document.getElementById('eligibilityDate').textContent).toBe('-');
+      expect(document.querySelector('.eligibility-label').textContent)
+        .toBe('Please enter your ILR date below and add your travel entries to see eligibility information');
+      expect(document.querySelector('.eligibility-label').classList.contains('not-eligible')).toBe(true);
+      expect(document.querySelector('.eligibility-label').classList.contains('eligible')).toBe(false);
+      expect(document.getElementById('helpText').classList.contains('show')).toBe(false);
+      expect(document.querySelector('.help-message').textContent).toBe('');
     });
 
-    it('should count 0 days for consecutive travel dates', () => {
+    it('should initialize with empty state when no saved data exists', () => {
+      // Trigger the DOMContentLoaded event with no saved data
+      chrome.storage.local.get.mockImplementation((keys, callback) => {
+        callback({});
+      });
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+
+      expect(document.getElementById('startDate').value).toBe('');
+      expect(document.querySelectorAll('.travel-entry')).toHaveLength(0);
+      expect(document.querySelector('.progress-container').style.display).toBe('none');
+      expect(document.getElementById('daysUsed').textContent).toBe('0');
+      expect(document.getElementById('eligibilityDate').textContent).toBe('-');
+    });
+  });
+
+  describe('Date Validation', () => {
+    it('should handle invalid date combinations', () => {
       document.getElementById('startDate').value = '2024-01-01';
       
-      // Trip from Jan 1-2 (consecutive days) should count as 0 days
-      addTravelEntry('2024-01-01', '2024-01-02');
+      // Add travel entry with end date before start date
+      addTravelEntry('2024-02-15', '2024-02-01');
       calculateDays();
-      expect(document.getElementById('daysUsed').textContent).toBe('0');
-      expect(document.querySelector('.days-remaining').textContent).toBe('90 days remaining');
-      expect(document.querySelector('.progress-bar-fill').style.width).toBe('0%');
       
-      // Trip from Jan 10-11 (consecutive days) should also count as 0 days
-      addTravelEntry('2024-01-10', '2024-01-11');
-      calculateDays();
+      // Should not count any days for invalid date range
       expect(document.getElementById('daysUsed').textContent).toBe('0');
-      expect(document.querySelector('.days-remaining').textContent).toBe('90 days remaining');
-      expect(document.querySelector('.progress-bar-fill').style.width).toBe('0%');
+    });
+
+    it('should handle future dates correctly', () => {
+      const futureDate = new Date();
+      futureDate.setFullYear(futureDate.getFullYear() + 1);
+      futureDate.setDate(1); // Set to first day of the month to avoid end-of-month issues
+      const futureDateString = futureDate.toISOString().split('T')[0];
+      
+      document.getElementById('startDate').value = futureDateString;
+      addTravelEntry(futureDateString, futureDateString);
+      calculateDays();
+      
+      // Should show future eligibility date
+      const expectedEligibilityDate = new Date(futureDate);
+      expectedEligibilityDate.setFullYear(expectedEligibilityDate.getFullYear() + 1);
+      expectedEligibilityDate.setDate(expectedEligibilityDate.getDate() - 1);
+      
+      const expectedDateString = expectedEligibilityDate.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+      
+      expect(document.getElementById('eligibilityDate').textContent).toBe(expectedDateString);
     });
   });
 

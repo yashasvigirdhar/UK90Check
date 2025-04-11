@@ -49,34 +49,43 @@ function addTravelEntry(startDate = '', endDate = '') {
  * in the 12-month period from the start date
  */
 function calculateDays() {
-  const startDate = new Date(document.getElementById('startDate').value);
-  const travelEntries = document.querySelectorAll('.travel-entry');
-  const daysRemaining = document.querySelector('.days-remaining');
-  const progressBarFill = document.querySelector('.progress-bar-fill');
+  const startDateInput = document.getElementById('startDate').value;
   const daysUsed = document.getElementById('daysUsed');
+  const daysRemaining = document.querySelector('.days-remaining');
+  const progressBar = document.querySelector('.progress-bar-fill');
+  const progressContainer = document.querySelector('.progress-container');
   const eligibilityLabel = document.querySelector('.eligibility-label');
   const eligibilityDate = document.getElementById('eligibilityDate');
   const helpText = document.getElementById('helpText');
   const helpMessage = helpText.querySelector('.help-message');
 
-  // Check if start date is not provided
-  if (!document.getElementById('startDate').value) {
-    eligibilityLabel.textContent = 'Please enter your ILR date below and add your travel entries to see eligibility information';
-    eligibilityLabel.classList.add('not-eligible');
-    eligibilityLabel.classList.remove('eligible');
-    eligibilityDate.textContent = '-';
-    helpMessage.textContent = '';
-    helpText.classList.remove('show');
-    daysRemaining.textContent = '90 days remaining';
+  if (!startDateInput) {
     daysUsed.textContent = '0';
-    progressBarFill.style.width = '0%';
+    progressContainer.style.display = 'none';
+    eligibilityLabel.textContent = 'Please enter your ILR date below and add your travel entries to see eligibility information';
+    eligibilityLabel.classList.remove('eligible', 'not-eligible');
+    eligibilityLabel.classList.add('not-eligible');
+    eligibilityDate.textContent = '-';
+    helpText.classList.remove('show');
+    helpMessage.textContent = '';
     return;
   }
 
-  // Calculate eligibility date (12 months from start date)
+  // Show progress container when ILR date is provided
+  progressContainer.style.display = 'block';
+
+  const startDate = new Date(startDateInput);
+  const travelEntries = document.querySelectorAll('.travel-entry');
+  let daysOutsideUK = 0;
   const eligibilityDateObj = new Date(startDate);
   eligibilityDateObj.setFullYear(eligibilityDateObj.getFullYear() + 1);
   eligibilityDateObj.setDate(eligibilityDateObj.getDate() - 1);
+
+  // Set all dates to noon to avoid timezone issues
+  startDate.setHours(12, 0, 0, 0);
+  eligibilityDateObj.setHours(12, 0, 0, 0);
+
+  // Calculate eligibility date (12 months from start date)
   eligibilityDate.textContent = eligibilityDateObj.toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
@@ -127,11 +136,11 @@ function calculateDays() {
     }
   });
 
-  const daysOutsideUK = uniqueDays.size;
+  daysOutsideUK = uniqueDays.size;
   const remainingDays = Math.max(0, 90 - daysOutsideUK);
 
   // Update UI
-  daysRemaining.textContent = `${remainingDays} days remaining`;
+  daysRemaining.textContent = `${daysOutsideUK} days used`;
   daysUsed.textContent = daysOutsideUK;
   
   // Update progress bar
@@ -139,21 +148,24 @@ function calculateDays() {
   const formattedPercentage = percentage === 0 ? '0%' :
                              percentage === 100 ? '100%' :
                              `${Math.round(percentage)}%`;
-  progressBarFill.style.width = formattedPercentage;
+  progressBar.style.width = formattedPercentage;
   
-  // Update colors based on remaining days
+  // Update colors based on days used
   daysRemaining.classList.remove('green', 'yellow', 'orange', 'red');
-  progressBarFill.classList.remove('green', 'yellow', 'orange', 'red');
+  progressBar.classList.remove('green', 'yellow', 'orange', 'red');
   
-  if (remainingDays >= 60) {
+  if (daysOutsideUK <= 50) {
     daysRemaining.classList.add('green');
-    progressBarFill.classList.add('green');
-  } else if (remainingDays >= 30) {
+    progressBar.classList.add('green');
+  } else if (daysOutsideUK <= 75) {
     daysRemaining.classList.add('yellow');
-    progressBarFill.classList.add('yellow');
+    progressBar.classList.add('yellow');
+  } else if (daysOutsideUK <= 90) {
+    daysRemaining.classList.add('orange');
+    progressBar.classList.add('orange');
   } else {
     daysRemaining.classList.add('red');
-    progressBarFill.classList.add('red');
+    progressBar.classList.add('red');
   }
 
   // Update eligibility message
@@ -162,7 +174,7 @@ function calculateDays() {
       eligibilityLabel.textContent = 'You might still be eligible to apply for UK citizenship on';
       eligibilityLabel.classList.add('not-eligible');
       eligibilityLabel.classList.remove('eligible');
-      helpMessage.textContent = 'While you have exceeded the standard limit of90 days, this might be normally disregarded as you are still under the 100 days limit.';
+      helpMessage.textContent = 'While you have exceeded the standard limit of 90 days, this might be normally disregarded as you are still under the 100 days limit.';
       helpText.classList.add('show');
     } else if (daysOutsideUK <= 179) {
       eligibilityLabel.textContent = 'You might still be eligible to apply for UK citizenship on';
@@ -171,7 +183,7 @@ function calculateDays() {
       helpMessage.textContent = 'While you have exceeded 100 days, this might be normally disregarded only if all other requirements are met and you have demonstrated links with the UK through presence of family, established home and a substantial part of your estate.';
       helpText.classList.add('show');
       daysRemaining.classList.add('dark-red');
-      progressBarFill.classList.add('dark-red');
+      progressBar.classList.add('dark-red');
     } else {
       eligibilityLabel.textContent = 'You might not be eligible to apply for UK citizenship on';
       eligibilityLabel.classList.add('not-eligible');
@@ -179,7 +191,7 @@ function calculateDays() {
       helpMessage.textContent = 'You have spent more than 179 days outside the UK in the 12 months before applying for citizenship. This exceeds the maximum allowed period.';
       helpText.classList.add('show');
       daysRemaining.classList.add('dark-red');
-      progressBarFill.classList.add('dark-red');
+      progressBar.classList.add('dark-red');
     }
   } else {
     eligibilityLabel.textContent = 'You can apply for UK citizenship on';
