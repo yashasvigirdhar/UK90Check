@@ -106,6 +106,25 @@ describe('UK90Check Extension', () => {
   });
 
   describe('Days Calculation and UI Updates', () => {
+    it('should show message to provide ILR date when start date is not entered', () => {
+      document.getElementById('startDate').value = '';
+      calculateDays();
+
+      const eligibilityLabel = document.querySelector('.eligibility-label');
+      const helpText = document.getElementById('helpText');
+      const helpMessage = helpText.querySelector('.help-message');
+      
+      expect(eligibilityLabel.textContent).toBe('Please enter your ILR date below and add your travel entries to see eligibility information');
+      expect(eligibilityLabel.classList.contains('not-eligible')).toBe(true);
+      expect(eligibilityLabel.classList.contains('eligible')).toBe(false);
+      expect(helpMessage.textContent).toBe('');
+      expect(helpText.classList.contains('show')).toBe(false);
+      expect(document.getElementById('eligibilityDate').textContent).toBe('-');
+      expect(document.querySelector('.days-remaining').textContent).toBe('90 days remaining');
+      expect(document.querySelector('.progress-bar-fill').style.width).toBe('0%');
+      expect(document.getElementById('daysUsed').textContent).toBe('0');
+    });
+
     it('should show 90 days and green color when no travel dates are added', () => {
       document.getElementById('startDate').value = '2024-01-01';
       calculateDays();

@@ -59,6 +59,20 @@ function calculateDays() {
   const helpText = document.getElementById('helpText');
   const helpMessage = helpText.querySelector('.help-message');
 
+  // Check if start date is not provided
+  if (!document.getElementById('startDate').value) {
+    eligibilityLabel.textContent = 'Please enter your ILR date below and add your travel entries to see eligibility information';
+    eligibilityLabel.classList.add('not-eligible');
+    eligibilityLabel.classList.remove('eligible');
+    eligibilityDate.textContent = '-';
+    helpMessage.textContent = '';
+    helpText.classList.remove('show');
+    daysRemaining.textContent = '90 days remaining';
+    daysUsed.textContent = '0';
+    progressBarFill.style.width = '0%';
+    return;
+  }
+
   // Calculate eligibility date (12 months from start date)
   const eligibilityDateObj = new Date(startDate);
   eligibilityDateObj.setFullYear(eligibilityDateObj.getFullYear() + 1);
