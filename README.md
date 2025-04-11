@@ -17,10 +17,11 @@ This is my pilot project to explore AI-generated code using [Cursor](https://www
 
 ## Screenshots
 
-![UK90Check Extension in Action](screenshots/screenshot1.png)
-![UK90Check Extension in Action](screenshots/screenshot2.png)
-![UK90Check Extension in Action](screenshots/screenshot3.png)
-
+<div style="display: flex; overflow-x: auto; gap: 20px; padding: 20px; background: #f5f5f5; border-radius: 8px;">
+  <img src="screenshots/screenshot1.png" alt="UK90Check Extension in Action" style="height: 400px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+  <img src="screenshots/screenshot2.png" alt="UK90Check Extension in Action" style="height: 400px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+  <img src="screenshots/screenshot3.png" alt="UK90Check Extension in Action" style="height: 400px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+</div>
 
 ## How to Use
 
